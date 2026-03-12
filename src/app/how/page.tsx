@@ -54,15 +54,15 @@ export default function HowPage() {
           <div className="space-y-4 font-mono text-sm">
             <FormulaLine
               label="Overall Score"
-              formula="FollowerScale × 0.2 + FollowerQuality × 0.25 + UpdateStability × 0.15 + ImpressionStability × 0.2 + EngagementRate × 0.2"
+              formula="Follower Scale × 0.2 + Follower Quality × 0.25 + Update Stability × 0.15 + Impression Stability × 0.2 + Engagement Rate × 0.2"
             />
             <FormulaLine
               label="CPM"
-              formula="$10 + (OverallScore / 100) × $90"
+              formula="$10 + (Overall Score / 100) × $90"
             />
             <FormulaLine
               label="Price"
-              formula="CPM × AvgImpressions / 1000 × DomainMultiplier"
+              formula="CPM × Avg Impressions / 1000 × Domain Multiplier"
             />
           </div>
         </Card>
