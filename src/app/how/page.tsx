@@ -25,7 +25,7 @@ export default function HowPage() {
           <StepCard
             step={2}
             title="Fetch Recent Tweets"
-            desc="We pull the last 20 original tweets (excluding retweets and replies) with full engagement metrics: impressions, likes, replies, retweets, and quotes."
+            desc="We pull the last 30 original tweets (excluding retweets and replies) with full engagement metrics: impressions, likes, replies, retweets, and quotes."
           />
           <StepCard
             step={3}
@@ -35,7 +35,7 @@ export default function HowPage() {
           <StepCard
             step={4}
             title="Multi-Dimension Scoring"
-            desc="We calculate a composite score from 5 weighted dimensions (see below)."
+            desc="We calculate a composite score from 5 weighted dimensions based on the last 30 tweets (see below)."
           />
           <StepCard
             step={5}
@@ -100,57 +100,58 @@ export default function HowPage() {
         <div className="space-y-4">
           <DimensionCard
             title="Follower Scale (20%)"
-            description="Measures the KOL's audience size. A larger follower base means wider potential reach for sponsored content. This metric directly reflects the upper bound of how many people could see a tweet. Scores increase at key thresholds: micro-influencers (10K+), mid-tier (20K+), established (50K+), and top-tier (100K+)."
+            description="Measures the KOL's audience size. A larger follower base means wider potential reach for sponsored content. This metric directly reflects the upper bound of how many people could see a tweet. Scores increase at key thresholds: nano (5K+), micro-influencers (10K+), mid-tier (20K+), established (50K+), and top-tier (100K+)."
             rows={[
               ["> 100K", "100"],
               ["50K – 100K", "80"],
               ["20K – 50K", "60"],
               ["10K – 20K", "40"],
-              ["< 10K", "20"],
+              ["5K – 10K", "20"],
+              ["< 5K", "5"],
             ]}
           />
           <DimensionCard
             title="Follower Quality — ER% (25%)"
             description="Evaluates how engaged the KOL's audience truly is. Calculated as: average interactions (likes + replies + retweets + quotes) per tweet divided by follower count. A high ER means followers actively read and interact — not just passive or bot accounts. This is the highest-weighted dimension because engagement directly determines ad effectiveness."
             rows={[
-              ["> 1%", "100"],
-              ["0.5% – 1%", "80"],
-              ["0.2% – 0.5%", "60"],
-              ["0.05% – 0.2%", "40"],
-              ["< 0.05%", "20"],
+              ["> 2%", "100"],
+              ["1% – 2%", "75"],
+              ["0.5% – 1%", "50"],
+              ["0.1% – 0.5%", "25"],
+              ["< 0.1%", "10"],
             ]}
           />
           <DimensionCard
             title="Update Stability — CV (15%)"
-            description="Measures how consistently the KOL posts content. We calculate the time intervals between the last 20 tweets, then compute the Coefficient of Variation (standard deviation / mean). A low CV means the KOL posts on a regular schedule — advertisers can rely on consistent content output. A high CV suggests erratic posting, which makes campaign timing unpredictable."
+            description="Measures how consistently the KOL posts content. We calculate the time intervals between the last 30 tweets, then compute the Coefficient of Variation (standard deviation / mean). A low CV means the KOL posts on a regular schedule — advertisers can rely on consistent content output. A high CV suggests erratic posting, which makes campaign timing unpredictable."
             rows={[
-              ["< 0.3", "100"],
-              ["0.3 – 0.6", "80"],
-              ["0.6 – 0.9", "60"],
-              ["0.9 – 1.3", "40"],
-              ["> 1.3", "20"],
+              ["< 0.2", "100"],
+              ["0.2 – 0.4", "80"],
+              ["0.4 – 0.6", "60"],
+              ["0.6 – 1.0", "40"],
+              ["> 1.0", "20"],
             ]}
           />
           <DimensionCard
             title="Impression Stability — CV (20%)"
-            description="Evaluates how predictable the KOL's reach is across tweets. We take the impression counts from the last 20 tweets and compute the Coefficient of Variation. Low CV means each tweet reaches a similar-sized audience — advertisers get reliable exposure. High CV means some tweets go viral while others underperform, making campaign ROI harder to predict."
+            description="Evaluates how predictable the KOL's reach is across tweets. We take the impression counts from the last 30 tweets and compute the Coefficient of Variation. Low CV means each tweet reaches a similar-sized audience — advertisers get reliable exposure. High CV means some tweets go viral while others underperform, making campaign ROI harder to predict."
             rows={[
-              ["< 0.3", "100"],
-              ["0.3 – 0.5", "80"],
-              ["0.5 – 0.8", "60"],
-              ["0.8 – 1.2", "40"],
-              ["> 1.2", "20"],
+              ["< 0.2", "100"],
+              ["0.2 – 0.4", "80"],
+              ["0.4 – 0.6", "60"],
+              ["0.6 – 0.8", "40"],
+              ["> 0.8", "20"],
             ]}
           />
           <DimensionCard
             title="Engagement Rate — ER% (20%)"
-            description="An absolute measure of how much interaction each tweet generates relative to the follower base. While Follower Quality also uses ER, this dimension applies stricter thresholds to differentiate truly exceptional engagement (1.5%+) from average performance. Top KOLs consistently achieve high ER because their content resonates deeply with their niche audience."
+            description="An absolute measure of how much interaction each tweet generates relative to the follower base. While Follower Quality also uses ER, this dimension applies stricter thresholds to differentiate truly exceptional engagement (3%+) from average performance. Top KOLs consistently achieve high ER because their content resonates deeply with their niche audience."
             rows={[
-              ["> 1.5%", "100"],
-              ["0.8% – 1.5%", "80"],
-              ["0.3% – 0.8%", "60"],
-              ["0.1% – 0.3%", "40"],
-              ["< 0.1%", "20"],
+              ["> 3%", "100"],
+              ["2% – 3%", "80"],
+              ["1% – 2%", "60"],
+              ["0.5% – 1%", "40"],
+              ["< 0.5%", "20"],
             ]}
           />
         </div>
