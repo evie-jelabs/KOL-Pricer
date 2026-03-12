@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm install @anthropic-ai/sdk)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "WebFetch(domain:elfsight.com)",
+      "WebFetch(domain:docs.x.com)",
+      "WebFetch(domain:www.wearefounders.uk)",
+      "WebFetch(domain:www.xpoz.ai)"
     ]
   }
 }

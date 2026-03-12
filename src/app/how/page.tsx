@@ -113,44 +113,44 @@ export default function HowPage() {
             title="Follower Quality — ER% (25%)"
             description="Evaluates how engaged the KOL's audience truly is. Calculated as: average interactions (likes + replies + retweets + quotes) per tweet divided by follower count. A high ER means followers actively read and interact — not just passive or bot accounts. This is the highest-weighted dimension because engagement directly determines ad effectiveness."
             rows={[
-              ["> 2%", "100"],
-              ["1% – 2%", "75"],
-              ["0.5% – 1%", "50"],
-              ["0.1% – 0.5%", "25"],
-              ["< 0.1%", "10"],
+              ["> 1%", "100"],
+              ["0.5% – 1%", "80"],
+              ["0.2% – 0.5%", "60"],
+              ["0.05% – 0.2%", "40"],
+              ["< 0.05%", "20"],
             ]}
           />
           <DimensionCard
             title="Update Stability — CV (15%)"
             description="Measures how consistently the KOL posts content. We calculate the time intervals between the last 20 tweets, then compute the Coefficient of Variation (standard deviation / mean). A low CV means the KOL posts on a regular schedule — advertisers can rely on consistent content output. A high CV suggests erratic posting, which makes campaign timing unpredictable."
             rows={[
-              ["< 0.2", "100"],
-              ["0.2 – 0.4", "80"],
-              ["0.4 – 0.6", "60"],
-              ["0.6 – 1.0", "40"],
-              ["> 1.0", "20"],
+              ["< 0.3", "100"],
+              ["0.3 – 0.6", "80"],
+              ["0.6 – 0.9", "60"],
+              ["0.9 – 1.3", "40"],
+              ["> 1.3", "20"],
             ]}
           />
           <DimensionCard
             title="Impression Stability — CV (20%)"
             description="Evaluates how predictable the KOL's reach is across tweets. We take the impression counts from the last 20 tweets and compute the Coefficient of Variation. Low CV means each tweet reaches a similar-sized audience — advertisers get reliable exposure. High CV means some tweets go viral while others underperform, making campaign ROI harder to predict."
             rows={[
-              ["< 0.2", "100"],
-              ["0.2 – 0.4", "80"],
-              ["0.4 – 0.6", "60"],
-              ["0.6 – 0.8", "40"],
-              ["> 0.8", "20"],
+              ["< 0.3", "100"],
+              ["0.3 – 0.5", "80"],
+              ["0.5 – 0.8", "60"],
+              ["0.8 – 1.2", "40"],
+              ["> 1.2", "20"],
             ]}
           />
           <DimensionCard
             title="Engagement Rate — ER% (20%)"
-            description="An absolute measure of how much interaction each tweet generates relative to the follower base. While Follower Quality also uses ER, this dimension applies stricter thresholds to differentiate truly exceptional engagement (3%+) from average performance. Top KOLs consistently achieve high ER because their content resonates deeply with their niche audience."
+            description="An absolute measure of how much interaction each tweet generates relative to the follower base. While Follower Quality also uses ER, this dimension applies stricter thresholds to differentiate truly exceptional engagement (1.5%+) from average performance. Top KOLs consistently achieve high ER because their content resonates deeply with their niche audience."
             rows={[
-              ["> 3%", "100"],
-              ["2% – 3%", "80"],
-              ["1% – 2%", "60"],
-              ["0.5% – 1%", "40"],
-              ["< 0.5%", "20"],
+              ["> 1.5%", "100"],
+              ["0.8% – 1.5%", "80"],
+              ["0.3% – 0.8%", "60"],
+              ["0.1% – 0.3%", "40"],
+              ["< 0.1%", "20"],
             ]}
           />
         </div>

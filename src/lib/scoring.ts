@@ -18,34 +18,34 @@ export function scoreFollowerScale(followers: number): number {
 
 export function scoreFollowerQuality(engagementRate: number): number {
   // engagementRate as percentage (e.g. 1.5 means 1.5%)
-  if (engagementRate > 2) return 100;
-  if (engagementRate >= 1) return 75;
-  if (engagementRate >= 0.5) return 50;
-  if (engagementRate >= 0.1) return 25;
-  return 10;
+  if (engagementRate > 1) return 100;
+  if (engagementRate >= 0.5) return 80;
+  if (engagementRate >= 0.2) return 60;
+  if (engagementRate >= 0.05) return 40;
+  return 20;
 }
 
 export function scoreUpdateStability(cv: number): number {
-  if (cv < 0.2) return 100;
-  if (cv <= 0.4) return 80;
-  if (cv <= 0.6) return 60;
-  if (cv <= 1.0) return 40;
+  if (cv < 0.3) return 100;
+  if (cv <= 0.6) return 80;
+  if (cv <= 0.9) return 60;
+  if (cv <= 1.3) return 40;
   return 20;
 }
 
 export function scoreImpressionStability(cv: number): number {
-  if (cv < 0.2) return 100;
-  if (cv <= 0.4) return 80;
-  if (cv <= 0.6) return 60;
-  if (cv <= 0.8) return 40;
+  if (cv < 0.3) return 100;
+  if (cv <= 0.5) return 80;
+  if (cv <= 0.8) return 60;
+  if (cv <= 1.2) return 40;
   return 20;
 }
 
 export function scoreEngagement(engagementRate: number): number {
-  if (engagementRate > 3) return 100;
-  if (engagementRate >= 2) return 80;
-  if (engagementRate >= 1) return 60;
-  if (engagementRate >= 0.5) return 40;
+  if (engagementRate > 1.5) return 100;
+  if (engagementRate >= 0.8) return 80;
+  if (engagementRate >= 0.3) return 60;
+  if (engagementRate >= 0.1) return 40;
   return 20;
 }
 
