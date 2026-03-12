@@ -19,10 +19,10 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-3">
           <Image
-            src="/logo.jpg"
+            src="/logo.png"
             alt="KOL Pricer"
-            width={32}
-            height={32}
+            width={36}
+            height={36}
             className="rounded-lg"
           />
           <span className="font-outfit text-xl font-bold text-white">
