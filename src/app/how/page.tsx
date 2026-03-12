@@ -45,6 +45,53 @@ export default function HowPage() {
         </div>
       </section>
 
+      {/* Formula */}
+      <section className="mt-16 space-y-6">
+        <h2 className="font-outfit text-2xl font-semibold text-white">
+          Pricing Formula
+        </h2>
+        <Card>
+          <div className="space-y-4 font-mono text-sm">
+            <FormulaLine
+              label="Overall Score"
+              formula="followerScale × 0.2 + followerQuality × 0.25 + updateStability × 0.15 + impressionStability × 0.2 + engagementRate × 0.2"
+            />
+            <FormulaLine
+              label="CPM"
+              formula="$10 + (overallScore / 100) × $90"
+            />
+            <FormulaLine
+              label="Price"
+              formula="CPM × avgImpressions / 1000 × domainMultiplier"
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="mb-3 font-outfit text-lg font-semibold text-white">
+            Domain Multipliers
+          </h3>
+          <div className="grid grid-cols-2 gap-2 font-mono text-sm sm:grid-cols-3">
+            {[
+              ["Crypto / Web3", "1.4x"],
+              ["Finance", "1.4x"],
+              ["Tech", "1.3x"],
+              ["Business", "1.2x"],
+              ["Entertainment", "1.0x"],
+              ["Other", "1.0x"],
+            ].map(([domain, mult]) => (
+              <div
+                key={domain}
+                className="flex items-center justify-between rounded-lg bg-gray-800/50 px-3 py-2"
+              >
+                <span className="text-gray-400">{domain}</span>
+                <span className="text-brand">{mult}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </section>
+
       {/* Scoring */}
       <section className="mt-16 space-y-6">
         <h2 className="font-outfit text-2xl font-semibold text-white">
@@ -107,53 +154,6 @@ export default function HowPage() {
             ]}
           />
         </div>
-      </section>
-
-      {/* Formula */}
-      <section className="mt-16 space-y-6">
-        <h2 className="font-outfit text-2xl font-semibold text-white">
-          Pricing Formula
-        </h2>
-        <Card>
-          <div className="space-y-4 font-mono text-sm">
-            <FormulaLine
-              label="Overall Score"
-              formula="followerScale × 0.2 + followerQuality × 0.25 + updateStability × 0.15 + impressionStability × 0.2 + engagementRate × 0.2"
-            />
-            <FormulaLine
-              label="CPM"
-              formula="$10 + (overallScore / 100) × $90"
-            />
-            <FormulaLine
-              label="Price"
-              formula="CPM × avgImpressions / 1000 × domainMultiplier"
-            />
-          </div>
-        </Card>
-
-        <Card>
-          <h3 className="mb-3 font-outfit text-lg font-semibold text-white">
-            Domain Multipliers
-          </h3>
-          <div className="grid grid-cols-2 gap-2 font-mono text-sm sm:grid-cols-3">
-            {[
-              ["Crypto / Web3", "1.4x"],
-              ["Finance", "1.4x"],
-              ["Tech", "1.3x"],
-              ["Business", "1.2x"],
-              ["Entertainment", "1.0x"],
-              ["Other", "1.0x"],
-            ].map(([domain, mult]) => (
-              <div
-                key={domain}
-                className="flex items-center justify-between rounded-lg bg-gray-800/50 px-3 py-2"
-              >
-                <span className="text-gray-400">{domain}</span>
-                <span className="text-brand">{mult}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
       </section>
     </div>
   );
