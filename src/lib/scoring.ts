@@ -26,15 +26,17 @@ export function scoreFollowerQuality(engagementRate: number): number {
 }
 
 export function scoreUpdateStability(cv: number): number {
-  if (cv < 0.3) return 100;
-  if (cv <= 0.6) return 70;
+  if (cv < 0.2) return 100;
+  if (cv <= 0.4) return 80;
+  if (cv <= 0.6) return 60;
   if (cv <= 1.0) return 40;
   return 20;
 }
 
 export function scoreImpressionStability(cv: number): number {
-  if (cv < 0.3) return 100;
-  if (cv <= 0.5) return 70;
+  if (cv < 0.2) return 100;
+  if (cv <= 0.4) return 80;
+  if (cv <= 0.6) return 60;
   if (cv <= 0.8) return 40;
   return 20;
 }

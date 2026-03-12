@@ -25,7 +25,7 @@ export default function HowPage() {
           <StepCard
             step={2}
             title="Fetch Recent Tweets"
-            desc="We pull the last 10 original tweets (excluding retweets and replies) with full engagement metrics: impressions, likes, replies, retweets, and quotes."
+            desc="We pull the last 20 original tweets (excluding retweets and replies) with full engagement metrics: impressions, likes, replies, retweets, and quotes."
           />
           <StepCard
             step={3}
@@ -53,6 +53,7 @@ export default function HowPage() {
         <div className="space-y-4">
           <DimensionCard
             title="Follower Scale (20%)"
+            description="Measures the KOL's audience size. A larger follower base means wider potential reach for sponsored content. This metric directly reflects the upper bound of how many people could see a tweet. Scores increase at key thresholds: micro-influencers (10K+), mid-tier (20K+), established (50K+), and top-tier (100K+)."
             rows={[
               ["> 100K", "100"],
               ["50K – 100K", "80"],
@@ -63,6 +64,7 @@ export default function HowPage() {
           />
           <DimensionCard
             title="Follower Quality — ER% (25%)"
+            description="Evaluates how engaged the KOL's audience truly is. Calculated as: average interactions (likes + replies + retweets + quotes) per tweet divided by follower count. A high ER means followers actively read and interact — not just passive or bot accounts. This is the highest-weighted dimension because engagement directly determines ad effectiveness."
             rows={[
               ["> 2%", "100"],
               ["1% – 2%", "75"],
@@ -73,24 +75,29 @@ export default function HowPage() {
           />
           <DimensionCard
             title="Update Stability — CV (15%)"
+            description="Measures how consistently the KOL posts content. We calculate the time intervals between the last 20 tweets, then compute the Coefficient of Variation (standard deviation / mean). A low CV means the KOL posts on a regular schedule — advertisers can rely on consistent content output. A high CV suggests erratic posting, which makes campaign timing unpredictable."
             rows={[
-              ["< 0.3", "100"],
-              ["0.3 – 0.6", "70"],
+              ["< 0.2", "100"],
+              ["0.2 – 0.4", "80"],
+              ["0.4 – 0.6", "60"],
               ["0.6 – 1.0", "40"],
               ["> 1.0", "20"],
             ]}
           />
           <DimensionCard
             title="Impression Stability — CV (20%)"
+            description="Evaluates how predictable the KOL's reach is across tweets. We take the impression counts from the last 20 tweets and compute the Coefficient of Variation. Low CV means each tweet reaches a similar-sized audience — advertisers get reliable exposure. High CV means some tweets go viral while others underperform, making campaign ROI harder to predict."
             rows={[
-              ["< 0.3", "100"],
-              ["0.3 – 0.5", "70"],
-              ["0.5 – 0.8", "40"],
+              ["< 0.2", "100"],
+              ["0.2 – 0.4", "80"],
+              ["0.4 – 0.6", "60"],
+              ["0.6 – 0.8", "40"],
               ["> 0.8", "20"],
             ]}
           />
           <DimensionCard
             title="Engagement Rate — ER% (20%)"
+            description="An absolute measure of how much interaction each tweet generates relative to the follower base. While Follower Quality also uses ER, this dimension applies stricter thresholds to differentiate truly exceptional engagement (3%+) from average performance. Top KOLs consistently achieve high ER because their content resonates deeply with their niche audience."
             rows={[
               ["> 3%", "100"],
               ["2% – 3%", "80"],
@@ -176,14 +183,21 @@ function StepCard({
 
 function DimensionCard({
   title,
+  description,
   rows,
 }: {
   title: string;
+  description?: string;
   rows: string[][];
 }) {
   return (
     <Card>
-      <h3 className="mb-3 font-outfit font-semibold text-white">{title}</h3>
+      <h3 className="mb-2 font-outfit font-semibold text-white">{title}</h3>
+      {description && (
+        <p className="mb-4 text-sm leading-relaxed text-gray-400">
+          {description}
+        </p>
+      )}
       <div className="space-y-1">
         {rows.map(([range, score]) => (
           <div

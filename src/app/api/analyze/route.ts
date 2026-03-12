@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
 
         // Step 2: Fetch recent tweets
         sendLog("Fetching recent tweets...");
-        const tweets = await getUserTweets(user.id, 10);
+        const tweets = await getUserTweets(user.id, 20);
         if (tweets.length === 0) {
           sendError("No tweets found for this user");
           controller.close();

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install @anthropic-ai/sdk)",
+      "Bash(npm run build)"
+    ]
+  }
+}

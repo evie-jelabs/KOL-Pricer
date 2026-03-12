@@ -59,7 +59,7 @@ export async function getUserByUsername(username: string): Promise<XUser> {
 
 export async function getUserTweets(
   userId: string,
-  maxResults: number = 10
+  maxResults: number = 20
 ): Promise<Tweet[]> {
   const data = await xFetch(`/users/${userId}/tweets`, {
     max_results: String(maxResults),
