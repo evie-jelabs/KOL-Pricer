@@ -4,9 +4,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "KOL Pricer — X KOL Tweet Pricing Calculator",
+  title: "KOL Pricer_by JE Labs",
   description:
     "Calculate fair pricing for KOL (Key Opinion Leader) sponsored tweets based on engagement, followers, and AI domain analysis.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

@@ -6,7 +6,9 @@
       "WebFetch(domain:elfsight.com)",
       "WebFetch(domain:docs.x.com)",
       "WebFetch(domain:www.wearefounders.uk)",
-      "WebFetch(domain:www.xpoz.ai)"
+      "WebFetch(domain:www.xpoz.ai)",
+      "Bash(python3 -c \"from PIL import Image; img = Image.open\\(''/Users/evie/KOL Pricer/public/favicon-32.png''\\); img.save\\(''/Users/evie/KOL Pricer/public/favicon.ico'', format=''ICO'', sizes=[\\(16,16\\),\\(32,32\\)]\\)\")",
+      "Bash(python3 -c \":*)"
     ]
   }
 }
