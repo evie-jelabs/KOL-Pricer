@@ -9,8 +9,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        brand: "#2EDBA4",
+        "brand-dark": "#26b888",
+      },
+      fontFamily: {
+        outfit: ["Outfit", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+        sans: ["Noto Sans SC", "Outfit", "sans-serif"],
       },
     },
   },
