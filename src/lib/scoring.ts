@@ -50,6 +50,17 @@ export function scoreEngagement(engagementRate: number): number {
   return 20;
 }
 
+// --- Outlier trimming ---
+
+/** Remove top N and bottom N tweets by impression count */
+export function trimOutliers(tweets: Tweet[], n: number = 2): Tweet[] {
+  if (tweets.length <= n * 2) return tweets;
+  const sorted = [...tweets].sort(
+    (a, b) => a.public_metrics.impression_count - b.public_metrics.impression_count
+  );
+  return sorted.slice(n, sorted.length - n);
+}
+
 // --- Utility ---
 
 function coefficientOfVariation(values: number[]): number {

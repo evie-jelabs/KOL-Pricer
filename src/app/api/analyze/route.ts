@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getUserByUsername, getUserTweets } from "@/lib/x-api";
 import { detectDomain } from "@/lib/anthropic";
-import { calculateScores, calculatePricing } from "@/lib/scoring";
+import { calculateScores, calculatePricing, trimOutliers } from "@/lib/scoring";
 import { RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS } from "@/lib/constants";
 
 // Simple in-memory rate limiter
@@ -121,28 +121,35 @@ export async function POST(req: NextRequest) {
         }
         sendLog(`Loaded ${tweets.length} recent tweets`, "success");
 
-        // Step 3: Domain detection
+        // Step 3: Trim outliers
+        const trimmed = trimOutliers(tweets, 2);
+        sendLog(
+          `Trimmed ${tweets.length - trimmed.length} outlier tweets (top/bottom by impressions), using ${trimmed.length} for scoring`,
+          "success"
+        );
+
+        // Step 4: Domain detection
         sendLog("Analyzing domain with AI...");
         const tweetTexts = tweets.map((t) => t.text);
         const domain = await detectDomain(user.description || "", tweetTexts);
         sendLog(`Domain identified: ${domain}`, "success");
 
-        // Step 4: Calculate scores
+        // Step 5: Calculate scores
         sendLog("Calculating scores...");
         const scores = calculateScores(
           user.public_metrics.followers_count,
-          tweets
+          trimmed
         );
         sendLog(
           `Overall score: ${scores.overall.toFixed(1)}/100`,
           "success"
         );
 
-        // Step 5: Calculate pricing
+        // Step 6: Calculate pricing
         sendLog("Computing pricing...");
         const pricing = calculatePricing(
           scores,
-          tweets,
+          trimmed,
           user.public_metrics.followers_count,
           domain
         );

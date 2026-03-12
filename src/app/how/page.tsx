@@ -29,16 +29,21 @@ export default function HowPage() {
           />
           <StepCard
             step={3}
+            title="Trim Outliers"
+            desc="We remove the 2 tweets with the highest impressions and the 2 with the lowest impressions (trimmed mean). This eliminates extreme outliers — such as artificially inflated or unusually underperforming tweets — leaving 26 tweets for reliable scoring."
+          />
+          <StepCard
+            step={4}
             title="AI Domain Detection"
             desc="Claude AI analyzes the user's bio and tweet content to classify their domain: crypto, tech, finance, business, entertainment, or other."
           />
           <StepCard
-            step={4}
+            step={5}
             title="Multi-Dimension Scoring"
-            desc="We calculate a composite score from 5 weighted dimensions based on the last 30 tweets (see below)."
+            desc="We calculate a composite score from 5 weighted dimensions based on the remaining 26 trimmed tweets (see below)."
           />
           <StepCard
-            step={5}
+            step={6}
             title="Price Calculation"
             desc="The final price is derived from CPM, average impressions, and a domain-specific multiplier."
           />
