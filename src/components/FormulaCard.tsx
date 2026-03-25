@@ -19,7 +19,7 @@ export default function FormulaCard({ scores, pricing, domain }: Props) {
           <span className="text-white">{scores.overall.toFixed(1)}</span>
         </div>
         <div className="flex justify-between text-gray-400">
-          <span>CPM = $10 + ({scores.overall.toFixed(1)}/100) x $90</span>
+          <span>CPM = $5 + ({scores.overall.toFixed(1)}/100) x $75</span>
           <span className="text-white">${pricing.cpm}</span>
         </div>
         <div className="flex justify-between text-gray-400">
@@ -32,10 +32,18 @@ export default function FormulaCard({ scores, pricing, domain }: Props) {
           <span>Domain ({domain})</span>
           <span className="text-white">{pricing.domainMultiplier}x</span>
         </div>
+        <div className="flex justify-between text-gray-400">
+          <span>Credibility</span>
+          <span className="text-white">{pricing.credibilityMultiplier}x</span>
+        </div>
+        <div className="flex justify-between text-gray-400">
+          <span>Relevance</span>
+          <span className="text-white">{pricing.relevanceMultiplier}x</span>
+        </div>
         <div className="border-t border-gray-700 pt-2">
           <div className="flex justify-between font-semibold">
             <span className="text-gray-300">
-              Price = CPM x Impressions/1000 x Multiplier
+              Price = CPM x Imp/1000 x Domain x Cred x Relev
             </span>
             <span className="text-brand">${pricing.price.toLocaleString()}</span>
           </div>

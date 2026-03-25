@@ -32,12 +32,20 @@ export default function PriceCard({ pricing, domain }: Props) {
           value={`${pricing.engagementRate}%`}
         />
         <Stat
-          label="Avg Engagement"
-          value={pricing.avgEngagement.toLocaleString()}
-        />
-        <Stat
           label="Domain Multiplier"
           value={`${pricing.domainMultiplier}x`}
+        />
+        <Stat
+          label="Credibility Multiplier"
+          value={`${pricing.credibilityMultiplier}x`}
+        />
+        <Stat
+          label="Relevance Multiplier"
+          value={`${pricing.relevanceMultiplier}x`}
+        />
+        <Stat
+          label="Avg Engagement"
+          value={pricing.avgEngagement.toLocaleString()}
         />
       </div>
     </Card>

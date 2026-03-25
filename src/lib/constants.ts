@@ -26,8 +26,8 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
   other: "Other",
 };
 
-export const BASE_CPM = 10;
-export const MAX_CPM_BONUS = 90;
+export const BASE_CPM = 5;
+export const MAX_CPM_BONUS = 75;
 
 export const RATE_LIMIT_WINDOW_MS = 60_000;
 export const RATE_LIMIT_MAX = 5;

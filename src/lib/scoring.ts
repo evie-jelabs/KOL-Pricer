@@ -130,11 +130,31 @@ export function calculateScores(
   };
 }
 
+// --- Credibility & Relevance Multipliers ---
+
+export function credibilityToMultiplier(score: number): number {
+  if (score >= 85) return 1.10;
+  if (score >= 70) return 1.00;
+  if (score >= 55) return 0.75;
+  if (score >= 40) return 0.50;
+  return 0.25;
+}
+
+export function relevanceToMultiplier(score: number): number {
+  if (score >= 80) return 1.10;
+  if (score >= 60) return 1.00;
+  if (score >= 40) return 0.70;
+  if (score >= 20) return 0.45;
+  return 0.25;
+}
+
 export function calculatePricing(
   scores: ScoreBreakdown,
   tweets: Tweet[],
   followers: number,
-  domain: Domain
+  domain: Domain,
+  credibilityScore: number = 75,
+  relevanceScore: number = 75
 ): PricingResult {
   const impressions = tweets.map((t) => t.public_metrics.impression_count);
   const avgImpressions =
@@ -151,7 +171,10 @@ export function calculatePricing(
 
   const cpm = BASE_CPM + (scores.overall / 100) * MAX_CPM_BONUS;
   const domainMultiplier = DOMAIN_MULTIPLIERS[domain];
-  const price = (cpm * avgImpressions * domainMultiplier) / 1000;
+  const credibilityMultiplier = credibilityToMultiplier(credibilityScore);
+  const relevanceMultiplier = relevanceToMultiplier(relevanceScore);
+  const price =
+    (cpm * avgImpressions * domainMultiplier * credibilityMultiplier * relevanceMultiplier) / 1000;
 
   return {
     cpm: Math.round(cpm * 100) / 100,
@@ -162,5 +185,7 @@ export function calculatePricing(
     avgEngagement: Math.round(avgEngagement),
     engagementRate: Math.round(engagementRate * 1000) / 1000,
     domainMultiplier,
+    credibilityMultiplier,
+    relevanceMultiplier,
   };
 }

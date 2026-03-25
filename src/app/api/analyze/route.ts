@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getUserByUsername, getUserTweets } from "@/lib/x-api";
-import { detectDomain } from "@/lib/anthropic";
+import { analyzeAccount } from "@/lib/anthropic";
 import { calculateScores, calculatePricing, trimOutliers } from "@/lib/scoring";
 import { RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS } from "@/lib/constants";
 
@@ -128,11 +128,30 @@ export async function POST(req: NextRequest) {
           "success"
         );
 
-        // Step 4: Domain detection
-        sendLog("Analyzing domain with AI...");
+        // Step 4: AI analysis (domain + credibility + relevance + tags)
+        sendLog("Analyzing with AI (domain, credibility, relevance, tags)...");
         const tweetTexts = tweets.map((t) => t.text);
-        const domain = await detectDomain(user.description || "", tweetTexts);
-        sendLog(`Domain identified: ${domain}`, "success");
+        const { domain, analysis: claudeAnalysis } = await analyzeAccount(
+          user.description || "",
+          tweetTexts,
+          user.public_metrics.followers_count,
+          user.public_metrics.following_count,
+          user.public_metrics.tweet_count,
+          user.created_at
+        );
+        sendLog(`Domain: ${domain}`, "success");
+        sendLog(
+          `Credibility: ${claudeAnalysis.credibilityScore}/100 — ${claudeAnalysis.credibilityReason}`,
+          "success"
+        );
+        sendLog(
+          `Relevance: ${claudeAnalysis.relevanceScore}/100 — ${claudeAnalysis.relevanceReason}`,
+          "success"
+        );
+        sendLog(
+          `Tags: [${claudeAnalysis.identityTags.join(", ")}] [${claudeAnalysis.capabilityTags.join(", ")}]`,
+          "success"
+        );
 
         // Step 5: Calculate scores
         sendLog("Calculating scores...");
@@ -145,13 +164,19 @@ export async function POST(req: NextRequest) {
           "success"
         );
 
-        // Step 6: Calculate pricing
+        // Step 6: Calculate pricing (with credibility & relevance multipliers)
         sendLog("Computing pricing...");
         const pricing = calculatePricing(
           scores,
           trimmed,
           user.public_metrics.followers_count,
-          domain
+          domain,
+          claudeAnalysis.credibilityScore,
+          claudeAnalysis.relevanceScore
+        );
+        sendLog(
+          `Credibility multiplier: ${pricing.credibilityMultiplier}x | Relevance multiplier: ${pricing.relevanceMultiplier}x`,
+          "success"
         );
         sendLog(
           `Estimated price: $${pricing.price.toLocaleString()}`,
@@ -165,6 +190,7 @@ export async function POST(req: NextRequest) {
           domain,
           scores,
           pricing,
+          claudeAnalysis,
           analyzedAt: new Date().toISOString(),
         });
       } catch (err: unknown) {

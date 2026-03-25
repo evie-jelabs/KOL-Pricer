@@ -8,6 +8,7 @@ import ScoreBreakdown from "@/components/ScoreBreakdown";
 import PriceCard from "@/components/PriceCard";
 import PriceRange from "@/components/PriceRange";
 import FormulaCard from "@/components/FormulaCard";
+import ClaudeInsightCard from "@/components/ClaudeInsightCard";
 import HistoryPanel from "@/components/HistoryPanel";
 
 export default function ToolPage() {
@@ -196,6 +197,9 @@ export default function ToolPage() {
               domain={result.domain}
             />
           </div>
+          {result.claudeAnalysis && (
+            <ClaudeInsightCard analysis={result.claudeAnalysis} />
+          )}
         </div>
       )}
 

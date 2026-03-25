@@ -47,6 +47,19 @@ export interface ScoreBreakdown {
   overall: number;
 }
 
+export type IdentityTag = "Builder" | "KOL" | "Content Creator";
+export type CapabilityTag = "Branding" | "Traffic" | "Trading";
+
+export interface ClaudeAnalysis {
+  credibilityScore: number;
+  credibilityReason: string;
+  relevanceScore: number;
+  relevanceReason: string;
+  identityTags: IdentityTag[];
+  capabilityTags: CapabilityTag[];
+  recommendation: string;
+}
+
 export interface PricingResult {
   cpm: number;
   price: number;
@@ -56,6 +69,8 @@ export interface PricingResult {
   avgEngagement: number;
   engagementRate: number;
   domainMultiplier: number;
+  credibilityMultiplier: number;
+  relevanceMultiplier: number;
 }
 
 export interface AnalysisResult {
@@ -64,6 +79,7 @@ export interface AnalysisResult {
   domain: Domain;
   scores: ScoreBreakdown;
   pricing: PricingResult;
+  claudeAnalysis: ClaudeAnalysis;
   analyzedAt: string;
 }
 
