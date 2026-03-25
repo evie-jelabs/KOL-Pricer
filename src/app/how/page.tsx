@@ -67,7 +67,7 @@ export default function HowPage() {
             />
             <FormulaLine
               label="Price"
-              formula="CPM × Avg Impressions / 1000 × Domain × Credibility × Relevance"
+              formula="CPM × Imp / 1000 × Domain × Credibility × Relevance × Identity"
             />
           </div>
         </Card>

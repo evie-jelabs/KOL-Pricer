@@ -71,6 +71,7 @@ export interface PricingResult {
   domainMultiplier: number;
   credibilityMultiplier: number;
   relevanceMultiplier: number;
+  identityMultiplier: number;
 }
 
 export interface AnalysisResult {

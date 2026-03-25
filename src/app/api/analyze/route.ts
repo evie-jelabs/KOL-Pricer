@@ -172,10 +172,11 @@ export async function POST(req: NextRequest) {
           user.public_metrics.followers_count,
           domain,
           claudeAnalysis.credibilityScore,
-          claudeAnalysis.relevanceScore
+          claudeAnalysis.relevanceScore,
+          claudeAnalysis.identityTags
         );
         sendLog(
-          `Credibility multiplier: ${pricing.credibilityMultiplier}x | Relevance multiplier: ${pricing.relevanceMultiplier}x`,
+          `Credibility: ${pricing.credibilityMultiplier}x | Relevance: ${pricing.relevanceMultiplier}x | Identity: ${pricing.identityMultiplier}x`,
           "success"
         );
         sendLog(

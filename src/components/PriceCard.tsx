@@ -44,6 +44,10 @@ export default function PriceCard({ pricing, domain }: Props) {
           value={`${pricing.relevanceMultiplier}x`}
         />
         <Stat
+          label="Identity Multiplier"
+          value={`${pricing.identityMultiplier}x`}
+        />
+        <Stat
           label="Avg Engagement"
           value={pricing.avgEngagement.toLocaleString()}
         />

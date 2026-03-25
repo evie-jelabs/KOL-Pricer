@@ -1,4 +1,4 @@
-import { Tweet, Domain, ScoreBreakdown, PricingResult } from "./types";
+import { Tweet, Domain, ScoreBreakdown, PricingResult, IdentityTag } from "./types";
 import {
   SCORE_WEIGHTS,
   DOMAIN_MULTIPLIERS,
@@ -148,13 +148,18 @@ export function relevanceToMultiplier(score: number): number {
   return 0.30;
 }
 
+export function identityToMultiplier(tags: IdentityTag[]): number {
+  return tags.includes("Builder") ? 1.20 : 1.00;
+}
+
 export function calculatePricing(
   scores: ScoreBreakdown,
   tweets: Tweet[],
   followers: number,
   domain: Domain,
   credibilityScore: number = 75,
-  relevanceScore: number = 75
+  relevanceScore: number = 75,
+  identityTags: IdentityTag[] = []
 ): PricingResult {
   const impressions = tweets.map((t) => t.public_metrics.impression_count);
   const avgImpressions =
@@ -173,8 +178,9 @@ export function calculatePricing(
   const domainMultiplier = DOMAIN_MULTIPLIERS[domain];
   const credibilityMultiplier = credibilityToMultiplier(credibilityScore);
   const relevanceMultiplier = relevanceToMultiplier(relevanceScore);
+  const identityMultiplier = identityToMultiplier(identityTags);
   const price =
-    (cpm * avgImpressions * domainMultiplier * credibilityMultiplier * relevanceMultiplier) / 1000;
+    (cpm * avgImpressions * domainMultiplier * credibilityMultiplier * relevanceMultiplier * identityMultiplier) / 1000;
 
   return {
     cpm: Math.round(cpm * 100) / 100,
@@ -187,5 +193,6 @@ export function calculatePricing(
     domainMultiplier,
     credibilityMultiplier,
     relevanceMultiplier,
+    identityMultiplier,
   };
 }

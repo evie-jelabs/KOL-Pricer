@@ -40,10 +40,14 @@ export default function FormulaCard({ scores, pricing, domain }: Props) {
           <span>Relevance</span>
           <span className="text-white">{pricing.relevanceMultiplier}x</span>
         </div>
+        <div className="flex justify-between text-gray-400">
+          <span>Identity{pricing.identityMultiplier > 1 ? " (Builder)" : ""}</span>
+          <span className="text-white">{pricing.identityMultiplier}x</span>
+        </div>
         <div className="border-t border-gray-700 pt-2">
           <div className="flex justify-between font-semibold">
             <span className="text-gray-300">
-              Price = CPM x Imp/1000 x Domain x Cred x Relev
+              Price = CPM x Imp/1000 x Dom x Cred x Rel x Id
             </span>
             <span className="text-brand">${pricing.price.toLocaleString()}</span>
           </div>
