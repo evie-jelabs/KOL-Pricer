@@ -141,11 +141,11 @@ export function credibilityToMultiplier(score: number): number {
 }
 
 export function relevanceToMultiplier(score: number): number {
-  if (score >= 80) return 1.10;
-  if (score >= 60) return 1.00;
-  if (score >= 40) return 0.70;
-  if (score >= 20) return 0.45;
-  return 0.25;
+  if (score >= 85) return 1.10;
+  if (score >= 70) return 1.00;
+  if (score >= 55) return 0.75;
+  if (score >= 40) return 0.55;
+  return 0.30;
 }
 
 export function calculatePricing(
