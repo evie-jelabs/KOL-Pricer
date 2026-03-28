@@ -175,10 +175,10 @@ export default function HowPage() {
         />
 
         <DimensionCard
-          title="2. Credibility (AI-evaluated, max 1.25x)"
+          title="2. Credibility (AI-evaluated, max 1.10x)"
           description="Claude AI evaluates account authenticity: follower-to-engagement ratio, posting patterns, content originality, and signs of manipulation."
           rows={[
-            ["85 - 100", "1.25x"],
+            ["85 - 100", "1.10x"],
             ["70 - 84", "1.00x"],
             ["55 - 69", "0.75x"],
             ["40 - 54", "0.50x"],
@@ -187,10 +187,10 @@ export default function HowPage() {
         />
 
         <DimensionCard
-          title="3. Relevance (AI-evaluated, max 1.25x)"
+          title="3. Relevance (AI-evaluated, max 1.10x)"
           description="Claude AI judges each tweet's relevance to the account's domain. Only substantive domain content counts as relevant."
           rows={[
-            ["85 - 100", "1.25x"],
+            ["85 - 100", "1.10x"],
             ["70 - 84", "1.00x"],
             ["55 - 69", "0.75x"],
             ["40 - 54", "0.55x"],

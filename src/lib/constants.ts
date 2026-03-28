@@ -107,18 +107,18 @@ export const MODIFIER_WEIGHTS = {
   identity: 0.20,
 } as const;
 
-// Credibility multiplier tiers (max 1.25x)
+// Credibility multiplier tiers (max 1.10x)
 export const CREDIBILITY_TIERS: [number, number][] = [
-  [85, 1.25],
+  [85, 1.10],
   [70, 1.00],
   [55, 0.75],
   [40, 0.50],
   [0, 0.25],
 ];
 
-// Relevance multiplier tiers (max 1.25x)
+// Relevance multiplier tiers (max 1.10x)
 export const RELEVANCE_TIERS: [number, number][] = [
-  [85, 1.25],
+  [85, 1.10],
   [70, 1.00],
   [55, 0.75],
   [40, 0.55],
