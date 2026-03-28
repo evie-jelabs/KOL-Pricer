@@ -50,7 +50,7 @@ export default function HowPage() {
           <StepCard
             step={7}
             title="Final Pricing"
-            desc="CPM = $5 + (Score/100) x $75. Price = CPM x (AvgImp/1000) x Modifiers (Domain x Credibility x Relevance x Identity). A Price Floor protects small accounts (≤80K followers) with good credibility. The final range is ±20%."
+            desc="CPM = $5 + (Score/100) x $75. Price = CPM x (AvgImp/1000) x Modifiers (Domain x Credibility x Relevance x Identity). The final range is ±20%."
           />
         </div>
       </section>
@@ -79,8 +79,8 @@ export default function HowPage() {
               formula="CPM x (Avg Impressions / 1000) x Modifiers"
             />
             <FormulaLine
-              label="Final"
-              formula="max(Price Floor, Price) x 0.8 ~ 1.2"
+              label="Range"
+              formula="Price x 0.8 ~ Price x 1.2"
             />
           </div>
         </Card>
@@ -208,41 +208,6 @@ export default function HowPage() {
         />
       </section>
 
-      {/* Price Floor */}
-      <section className="mt-16 space-y-6">
-        <h2 className="font-outfit text-2xl font-semibold text-white">
-          Price Floor
-        </h2>
-        <p className="text-gray-400">
-          Small accounts (up to 80K followers) with good credibility get a minimum
-          price guarantee. Accounts with low credibility (&lt;55) receive no floor
-          protection.
-        </p>
-        <Card>
-          <div className="space-y-1">
-            <div className="mb-2 text-xs text-gray-500">
-              Credibility &ge; 70: full floor | 55-69: half floor | &lt;55: no floor
-            </div>
-            {[
-              ["30K - 80K", "$400"],
-              ["15K - 30K", "$300"],
-              ["8K - 15K", "$200"],
-              ["3K - 8K", "$100"],
-              ["1K - 3K", "$50"],
-              ["< 1K", "$0"],
-              ["> 80K", "No floor"],
-            ].map(([range, floor]) => (
-              <div
-                key={range}
-                className="flex items-center justify-between rounded-lg px-3 py-1.5 font-mono text-sm odd:bg-gray-800/30"
-              >
-                <span className="text-gray-400">{range}</span>
-                <span className="text-white">{floor}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </section>
 
     </div>
   );

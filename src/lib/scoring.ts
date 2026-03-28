@@ -243,10 +243,10 @@ export function calculatePricing(
   // Price = CPM × (AvgImp/1000)^0.85 × Modifiers
   const calculatedPrice = cpm * effectiveImpressions * combinedModifiers;
 
-  // Floor
-  const floor = getPriceFloor(followers, credibilityScore);
-  const floorApplied = floor > 0 && calculatedPrice < floor;
-  const price = Math.max(calculatedPrice, floor);
+  // No floor
+  const floor = 0;
+  const floorApplied = false;
+  const price = calculatedPrice;
 
   return {
     cpm: Math.round(cpm * 100) / 100,
