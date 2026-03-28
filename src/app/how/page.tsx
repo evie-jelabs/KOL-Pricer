@@ -7,8 +7,8 @@ export default function HowPage() {
         How It <span className="text-brand">Works</span>
       </h1>
       <p className="mt-4 text-lg text-gray-400">
-        Our V5.1 pricing model combines real X data with AI analysis and 7
-        transparent modifiers to produce fair KOL tweet pricing.
+        Our pricing model combines real X data with AI analysis to produce
+        fair, transparent KOL tweet pricing.
       </p>
 
       {/* Pipeline */}
@@ -44,13 +44,13 @@ export default function HowPage() {
           />
           <StepCard
             step={6}
-            title="Calculate 7 Modifiers"
-            desc="We compute 7 pricing modifiers: 4 data-driven (Follower Factor, Domain, ER, RE) and 3 AI-evaluated (Credibility, Relevance, Identity). These are multiplied together to form the Combined Modifier."
+            title="5-Dimension Scoring"
+            desc="We calculate a composite Overall Score from 5 weighted dimensions: Follower Scale (20%), Follower Quality (25%), Update Stability (15%), Impression Stability (20%), and Engagement Rate (20%)."
           />
           <StepCard
             step={7}
             title="Final Pricing"
-            desc="Price = $60 x (AvgImp/1000)^0.85 x Combined Modifiers. A Price Floor protects small accounts (≤80K followers) with good credibility. The final range is ±20%."
+            desc="CPM = $5 + (Score/100) x $75. Price = CPM x (AvgImp/1000)^0.85 x Modifiers. A Price Floor protects small accounts (≤80K followers) with good credibility. The final range is ±20%."
           />
         </div>
       </section>
@@ -63,16 +63,24 @@ export default function HowPage() {
         <Card>
           <div className="space-y-4 font-mono text-sm">
             <FormulaLine
-              label="Effective Impressions"
+              label="Overall Score"
+              formula="FS x 0.2 + FQ x 0.25 + US x 0.15 + IS x 0.2 + ER x 0.2"
+            />
+            <FormulaLine
+              label="CPM"
+              formula="$5 + (Overall Score / 100) x $75"
+            />
+            <FormulaLine
+              label="Effective Imp"
               formula="(Avg Impressions / 1000) ^ 0.85"
             />
             <FormulaLine
               label="Modifiers"
-              formula="FF x Domain x Credibility x Relevance x Identity x ER x RE"
+              formula="Domain x Credibility x Relevance x Identity"
             />
             <FormulaLine
               label="Price"
-              formula="$60 x Effective Impressions x Modifiers"
+              formula="CPM x Effective Imp x Modifiers"
             />
             <FormulaLine
               label="Final"
@@ -82,106 +90,125 @@ export default function HowPage() {
         </Card>
       </section>
 
-      {/* 7 Modifiers */}
+      {/* Scoring Dimensions */}
       <section className="mt-16 space-y-6">
         <h2 className="font-outfit text-2xl font-semibold text-white">
-          7 Modifiers
+          Scoring Dimensions
         </h2>
 
-        {/* FF */}
         <DimensionCard
-          title="1. Follower Factor (FF)"
-          description="Measures the KOL's audience size. Larger accounts get a higher multiplier, with 8K-15K as the baseline (1.00x)."
+          title="Follower Scale (20%)"
+          description="Measures the KOL's audience size. Scored across 8 tiers with >60K as the maximum."
           rows={[
-            ["> 200K", "1.80x"],
-            ["80K - 200K", "1.60x"],
-            ["30K - 80K", "1.40x"],
-            ["15K - 30K", "1.20x"],
-            ["8K - 15K", "1.00x"],
-            ["3K - 8K", "0.80x"],
-            ["1K - 3K", "0.65x"],
-            ["500 - 1K", "0.50x"],
-            ["< 500", "0.30x"],
+            ["> 60K", "100"],
+            ["40K - 60K", "85"],
+            ["20K - 40K", "70"],
+            ["10K - 20K", "55"],
+            ["5K - 10K", "40"],
+            ["3K - 5K", "30"],
+            ["1K - 3K", "20"],
+            ["< 1K", "10"],
           ]}
         />
-
-        {/* Domain */}
         <DimensionCard
-          title="2. Domain"
-          description="Different industries have different CPM benchmarks. Crypto and Finance command the highest premiums."
+          title="Follower Quality — ER% (25%)"
+          description="Evaluates how engaged the KOL's audience is. Calculated as: average interactions per tweet divided by follower count. A high ER means followers actively interact — not just passive or bot accounts."
+          rows={[
+            ["> 2%", "100"],
+            ["1% - 2%", "75"],
+            ["0.5% - 1%", "50"],
+            ["0.1% - 0.5%", "25"],
+            ["< 0.1%", "10"],
+          ]}
+        />
+        <DimensionCard
+          title="Update Stability — CV (15%)"
+          description="Measures how consistently the KOL posts. We calculate the Coefficient of Variation of posting intervals. Low CV means regular posting — advertisers can rely on consistent output."
+          rows={[
+            ["< 0.2", "100"],
+            ["0.2 - 0.4", "80"],
+            ["0.4 - 0.6", "60"],
+            ["0.6 - 1.0", "40"],
+            ["> 1.0", "20"],
+          ]}
+        />
+        <DimensionCard
+          title="Impression Stability — CV (20%)"
+          description="Evaluates how predictable the KOL's reach is. Low CV means each tweet reaches a similar audience — advertisers get reliable exposure."
+          rows={[
+            ["< 0.2", "100"],
+            ["0.2 - 0.4", "80"],
+            ["0.4 - 0.6", "60"],
+            ["0.6 - 0.8", "40"],
+            ["> 0.8", "20"],
+          ]}
+        />
+        <DimensionCard
+          title="Engagement Rate — ER% (20%)"
+          description="Absolute measure of interaction per impression. Uses stricter thresholds to differentiate exceptional engagement from average performance."
+          rows={[
+            ["> 3%", "100"],
+            ["2% - 3%", "80"],
+            ["1% - 2%", "60"],
+            ["0.5% - 1%", "40"],
+            ["< 0.5%", "20"],
+          ]}
+        />
+      </section>
+
+      {/* Modifiers */}
+      <section className="mt-16 space-y-6">
+        <h2 className="font-outfit text-2xl font-semibold text-white">
+          4 Modifiers
+        </h2>
+
+        <DimensionCard
+          title="1. Domain"
+          description="Different industries have different CPM benchmarks."
           rows={[
             ["Crypto / Web3", "1.40x"],
-            ["Finance", "1.40x"],
             ["AI / Tech", "1.30x"],
-            ["Business", "1.20x"],
+            ["Finance", "1.25x"],
+            ["Business / Gaming", "1.10x"],
             ["Entertainment", "1.00x"],
-            ["Other", "1.00x"],
+            ["Other", "0.90x"],
           ]}
         />
 
-        {/* Credibility */}
         <DimensionCard
-          title="3. Credibility (AI-evaluated, max 1.00x)"
-          description="Claude AI evaluates account authenticity: follower-to-engagement ratio, posting patterns, content originality, and signs of manipulation. Data-porter accounts (reposting chain data without original analysis) are scored 50-65. This is a penalty-only modifier — it can only reduce the price, not increase it."
+          title="2. Credibility (AI-evaluated, max 1.25x)"
+          description="Claude AI evaluates account authenticity: follower-to-engagement ratio, posting patterns, content originality, and signs of manipulation."
           rows={[
-            ["85 - 100", "1.00x"],
-            ["70 - 84", "0.90x"],
-            ["55 - 69", "0.70x"],
-            ["40 - 54", "0.45x"],
+            ["85 - 100", "1.25x"],
+            ["70 - 84", "1.00x"],
+            ["55 - 69", "0.75x"],
+            ["40 - 54", "0.50x"],
             ["< 40", "0.25x"],
           ]}
         />
 
-        {/* Relevance */}
         <DimensionCard
-          title="4. Relevance (AI-evaluated, max 1.00x)"
-          description="Claude AI judges each tweet's relevance to the account's domain. Only substantive domain content counts — lifestyle posts, entertainment, giveaways, and generic commentary are marked as irrelevant. Scoring is strict: relevanceScore = relevant tweets / total tweets x 100."
+          title="3. Relevance (AI-evaluated, max 1.25x)"
+          description="Claude AI judges each tweet's relevance to the account's domain. Only substantive domain content counts as relevant."
           rows={[
-            ["85 - 100", "1.00x"],
-            ["70 - 84", "0.90x"],
-            ["55 - 69", "0.70x"],
-            ["40 - 54", "0.45x"],
-            ["< 40", "0.25x"],
+            ["85 - 100", "1.25x"],
+            ["70 - 84", "1.00x"],
+            ["55 - 69", "0.75x"],
+            ["40 - 54", "0.55x"],
+            ["< 40", "0.30x"],
           ]}
         />
 
-        {/* Identity */}
         <DimensionCard
-          title="5. Identity (AI-evaluated)"
-          description="Identity = Role x Capability. Role: Builder (founder/dev/researcher) = 1.20x, KOL = 1.10x, Content Creator = 1.00x. Capability: Branding = 1.10x, Trading = 1.10x, Traffic = 0.90x. Takes the highest from each set and multiplies."
+          title="4. Identity (AI-evaluated)"
+          description="Identity = Role x Capability. Role: Builder (founder/dev/researcher) = 1.20x, KOL = 1.10x, Content Creator = 1.00x. Capability: Branding = 1.20x, Trading = 1.00x, Traffic = 0.80x."
           rows={[
-            ["Builder x Branding", "1.32x"],
-            ["Builder x Trading", "1.32x"],
-            ["KOL x Branding", "1.21x"],
-            ["KOL x Trading", "1.21x"],
-            ["KOL x Traffic", "0.99x"],
-            ["CC x Traffic", "0.90x"],
-          ]}
-        />
-
-        {/* ER */}
-        <DimensionCard
-          title="6. Engagement Rate (ER) — Data-driven"
-          description="ER = (avg likes + replies + retweets) / avg impressions x 100%. Measures how actively the audience interacts with each tweet. Low ER suggests passive or fake followers."
-          rows={[
-            ["> 2%", "1.10x"],
-            ["1% - 2%", "1.00x"],
-            ["0.5% - 1%", "0.90x"],
-            ["0.2% - 0.5%", "0.80x"],
-            ["< 0.2%", "0.60x"],
-          ]}
-        />
-
-        {/* RE */}
-        <DimensionCard
-          title="7. Reach Efficiency (RE) — Data-driven"
-          description="RE = avg impressions / followers x 100%. Measures what percentage of followers actually see each tweet. Low RE means a large portion of followers are inactive or fake."
-          rows={[
-            ["> 20%", "1.10x"],
-            ["10% - 20%", "1.00x"],
-            ["5% - 10%", "0.90x"],
-            ["2% - 5%", "0.80x"],
-            ["< 2%", "0.60x"],
+            ["Builder x Branding", "1.44x"],
+            ["Builder x Trading", "1.20x"],
+            ["KOL x Branding", "1.32x"],
+            ["KOL x Trading", "1.10x"],
+            ["KOL x Traffic", "0.88x"],
+            ["CC x Traffic", "0.80x"],
           ]}
         />
       </section>
@@ -194,7 +221,7 @@ export default function HowPage() {
         <p className="text-gray-400">
           Small accounts (up to 80K followers) with good credibility get a minimum
           price guarantee. Accounts with low credibility (&lt;55) receive no floor
-          protection — this prevents fake accounts from benefiting.
+          protection.
         </p>
         <Card>
           <div className="space-y-1">
@@ -202,12 +229,12 @@ export default function HowPage() {
               Credibility &ge; 70: full floor | 55-69: half floor | &lt;55: no floor
             </div>
             {[
-              ["30K - 80K", "$500"],
-              ["15K - 30K", "$500"],
-              ["8K - 15K", "$350"],
-              ["3K - 8K", "$200"],
-              ["1K - 3K", "$100"],
-              ["< 1K", "$50"],
+              ["30K - 80K", "$450"],
+              ["15K - 30K", "$400"],
+              ["8K - 15K", "$300"],
+              ["3K - 8K", "$150"],
+              ["1K - 3K", "$50"],
+              ["< 1K", "$0"],
               ["> 80K", "No floor"],
             ].map(([range, floor]) => (
               <div
@@ -216,6 +243,40 @@ export default function HowPage() {
               >
                 <span className="text-gray-400">{range}</span>
                 <span className="text-white">{floor}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </section>
+
+      {/* Impression Decay */}
+      <section className="mt-16 space-y-6">
+        <h2 className="font-outfit text-2xl font-semibold text-white">
+          Impression Decay
+        </h2>
+        <p className="text-gray-400">
+          To prevent large accounts from being overpriced, we apply diminishing
+          returns on impressions: (AvgImp / 1000) ^ 0.85. This compresses high
+          impression counts while keeping small accounts mostly unaffected.
+        </p>
+        <Card>
+          <div className="space-y-1">
+            {[
+              ["2,000", "1.81", "91%"],
+              ["5,000", "4.23", "85%"],
+              ["15,000", "11.4", "76%"],
+              ["25,000", "18.1", "72%"],
+              ["50,000", "32.7", "65%"],
+              ["100,000", "56.2", "56%"],
+            ].map(([raw, effective, ratio]) => (
+              <div
+                key={raw}
+                className="flex items-center justify-between rounded-lg px-3 py-1.5 font-mono text-sm odd:bg-gray-800/30"
+              >
+                <span className="text-gray-400">{raw}</span>
+                <span className="text-gray-500">→</span>
+                <span className="text-white">{effective}</span>
+                <span className="text-gray-500">({ratio})</span>
               </div>
             ))}
           </div>
