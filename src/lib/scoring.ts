@@ -41,10 +41,10 @@ export function scoreFollowerQuality(er: number): number {
 }
 
 export function scoreUpdateStability(cv: number): number {
-  if (cv < 0.2) return 100;
-  if (cv < 0.4) return 80;
-  if (cv < 0.6) return 60;
-  if (cv < 1.0) return 40;
+  if (cv < 0.3) return 100;
+  if (cv < 0.5) return 80;
+  if (cv < 0.8) return 60;
+  if (cv < 1.2) return 40;
   return 20;
 }
 

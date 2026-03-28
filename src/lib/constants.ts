@@ -32,20 +32,20 @@ export const FOLLOWER_SCALE_TIERS: [number, number][] = [
 
 // Follower Quality (ER%) scoring tiers
 export const FOLLOWER_QUALITY_TIERS: [number, number][] = [
-  [2.0, 100],
-  [1.0, 75],
-  [0.5, 50],
-  [0.1, 25],
+  [1.5, 100],
+  [0.8, 75],
+  [0.3, 50],
+  [0.08, 25],
   [0, 10],
 ];
 
 // Update Stability (CV) scoring tiers
 export const UPDATE_STABILITY_TIERS: [number, number][] = [
-  [0, 100],   // CV < 0.2 → 100
-  [0.2, 80],
-  [0.4, 60],
-  [0.6, 40],
-  [1.0, 20],
+  [0, 100],   // CV < 0.3 → 100
+  [0.3, 80],
+  [0.5, 60],
+  [0.8, 40],
+  [1.2, 20],
 ];
 
 // Impression Stability (CV) scoring tiers
@@ -59,10 +59,10 @@ export const IMPRESSION_STABILITY_TIERS: [number, number][] = [
 
 // Engagement Rate scoring tiers
 export const ENGAGEMENT_RATE_TIERS: [number, number][] = [
-  [3.0, 100],
-  [2.0, 80],
-  [1.0, 60],
-  [0.5, 40],
+  [2.0, 100],
+  [1.5, 80],
+  [0.8, 60],
+  [0.3, 40],
   [0, 20],
 ];
 
