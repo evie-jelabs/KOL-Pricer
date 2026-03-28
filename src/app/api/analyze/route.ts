@@ -196,7 +196,6 @@ export async function POST(req: NextRequest) {
           claudeAnalysis.credibilityScore,
           claudeAnalysis.relevanceScore,
           claudeAnalysis.identityTags,
-          claudeAnalysis.capabilityTags
         );
 
         sendLog(

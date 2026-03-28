@@ -1,15 +1,12 @@
-import { Tweet, Domain, ScoreBreakdown, PricingResult, IdentityTag, CapabilityTag } from "./types";
+import { Tweet, Domain, ScoreBreakdown, PricingResult, IdentityTag } from "./types";
 import {
   SCORE_WEIGHTS,
   BASE_CPM,
   MAX_CPM_BONUS,
-  MODIFIER_WEIGHTS,
   FOLLOWER_SCALE_TIERS,
   FOLLOWER_QUALITY_TIERS,
   ENGAGEMENT_RATE_TIERS,
   DOMAIN_MULTIPLIERS,
-  IDENTITY_MULTIPLIERS,
-  CAPABILITY_MULTIPLIERS,
   CREDIBILITY_TIERS,
   RELEVANCE_TIERS,
   FLOOR_TIERS,
@@ -72,23 +69,9 @@ export function relevanceToMultiplier(score: number): number {
 
 export function identityToMultiplier(
   identityTags: IdentityTag[],
-  capabilityTags: CapabilityTag[]
 ): number {
-  let identityFactor = 1.00;
-  if (identityTags.length > 0) {
-    identityFactor = Math.max(
-      ...identityTags.map((tag) => IDENTITY_MULTIPLIERS[tag] ?? 1.00)
-    );
-  }
-
-  let capabilityFactor = 1.00;
-  if (capabilityTags.length > 0) {
-    capabilityFactor = Math.max(
-      ...capabilityTags.map((tag) => CAPABILITY_MULTIPLIERS[tag] ?? 1.00)
-    );
-  }
-
-  return Math.round(identityFactor * capabilityFactor * 100) / 100;
+  // Builder = 1.20x, everything else = 1.00x
+  return identityTags.includes("Builder") ? 1.20 : 1.00;
 }
 
 // --- Outlier trimming ---
@@ -224,7 +207,6 @@ export function calculatePricing(
   credibilityScore: number,
   relevanceScore: number,
   identityTags: IdentityTag[],
-  capabilityTags: CapabilityTag[]
 ): PricingResult {
   const impressions = tweets.map((t) => t.public_metrics.impression_count);
   const avgImpressions = impressions.length > 0
@@ -249,14 +231,14 @@ export function calculatePricing(
   const domainMultiplier = DOMAIN_MULTIPLIERS[domain];
   const credibilityMultiplier = credibilityToMultiplier(credibilityScore);
   const relevanceMultiplier = relevanceToMultiplier(relevanceScore);
-  const identityMultiplier = identityToMultiplier(identityTags, capabilityTags);
+  const identityMultiplier = identityToMultiplier(identityTags);
 
-  // Weighted average of modifiers
+  // Multiplicative modifiers
   const combinedModifiers =
-    credibilityMultiplier * MODIFIER_WEIGHTS.credibility +
-    relevanceMultiplier * MODIFIER_WEIGHTS.relevance +
-    domainMultiplier * MODIFIER_WEIGHTS.domain +
-    identityMultiplier * MODIFIER_WEIGHTS.identity;
+    domainMultiplier *
+    credibilityMultiplier *
+    relevanceMultiplier *
+    identityMultiplier;
 
   // Price = CPM × (AvgImp/1000)^0.85 × Modifiers
   const calculatedPrice = cpm * effectiveImpressions * combinedModifiers;

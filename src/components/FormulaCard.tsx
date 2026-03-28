@@ -8,8 +8,7 @@ interface Props {
 }
 
 export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) {
-  const identityLabel = claudeAnalysis.identityTags.join("+");
-  const capabilityLabel = claudeAnalysis.capabilityTags.join("+");
+  const isBuilder = claudeAnalysis.identityTags.includes("Builder");
 
   return (
     <Card>
@@ -53,7 +52,7 @@ export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) 
               <span>{pricing.relevanceMultiplier}x</span>
             </div>
             <div className="flex justify-between">
-              <span>Identity ({identityLabel} x {capabilityLabel})</span>
+              <span>Identity ({isBuilder ? "Builder" : "Creator"})</span>
               <span>{pricing.identityMultiplier}x</span>
             </div>
           </div>

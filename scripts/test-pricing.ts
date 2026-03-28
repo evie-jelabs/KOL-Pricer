@@ -87,7 +87,6 @@ async function analyzeOne(handle: string, actualPrice: number | null) {
       analysis.credibilityScore,
       analysis.relevanceScore,
       analysis.identityTags,
-      analysis.capabilityTags
     );
 
     // Calculate deviation
