@@ -4,6 +4,7 @@ import {
   BASE_CPM,
   MAX_CPM_BONUS,
   IMP_DECAY,
+  MODIFIER_WEIGHTS,
   FOLLOWER_SCALE_TIERS,
   FOLLOWER_QUALITY_TIERS,
   ENGAGEMENT_RATE_TIERS,
@@ -251,11 +252,12 @@ export function calculatePricing(
   const relevanceMultiplier = relevanceToMultiplier(relevanceScore);
   const identityMultiplier = identityToMultiplier(identityTags, capabilityTags);
 
+  // Weighted average of modifiers
   const combinedModifiers =
-    domainMultiplier *
-    credibilityMultiplier *
-    relevanceMultiplier *
-    identityMultiplier;
+    credibilityMultiplier * MODIFIER_WEIGHTS.credibility +
+    relevanceMultiplier * MODIFIER_WEIGHTS.relevance +
+    domainMultiplier * MODIFIER_WEIGHTS.domain +
+    identityMultiplier * MODIFIER_WEIGHTS.identity;
 
   // Price = CPM × (AvgImp/1000)^0.85 × Modifiers
   const calculatedPrice = cpm * effectiveImpressions * combinedModifiers;

@@ -99,6 +99,14 @@ export const CAPABILITY_MULTIPLIERS: Record<string, number> = {
   Traffic: 0.80,
 };
 
+// Modifier weights for weighted average
+export const MODIFIER_WEIGHTS = {
+  credibility: 0.35,
+  relevance: 0.25,
+  domain: 0.20,
+  identity: 0.20,
+} as const;
+
 // Credibility multiplier tiers (max 1.25x)
 export const CREDIBILITY_TIERS: [number, number][] = [
   [85, 1.25],
