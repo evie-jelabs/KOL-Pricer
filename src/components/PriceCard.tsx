@@ -21,32 +21,14 @@ export default function PriceCard({ pricing, domain }: Props) {
         </p>
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
-        <Stat label="Base CPM" value={`$${pricing.baseCpm}`} />
+        <Stat label="CPM" value={`$${pricing.cpm}`} />
         <Stat label="Domain" value={DOMAIN_LABELS[domain]} />
-        <Stat
-          label="Avg Impressions"
-          value={pricing.avgImpressions.toLocaleString()}
-        />
-        <Stat
-          label="Effective Imp (^0.85)"
-          value={`${pricing.effectiveImpressions}`}
-        />
-        <Stat
-          label="Engagement Rate"
-          value={`${pricing.engagementRate}%`}
-        />
-        <Stat
-          label="Reach Efficiency"
-          value={`${pricing.reachEfficiency}%`}
-        />
-        <Stat
-          label="Combined Modifiers"
-          value={`${pricing.combinedModifiers}x`}
-        />
-        <Stat
-          label="Avg Engagement"
-          value={pricing.avgEngagement.toLocaleString()}
-        />
+        <Stat label="Avg Impressions" value={pricing.avgImpressions.toLocaleString()} />
+        <Stat label="Effective Imp (^0.85)" value={`${pricing.effectiveImpressions}`} />
+        <Stat label="Overall Score" value={`${pricing.overallScore}/100`} />
+        <Stat label="Engagement Rate" value={`${pricing.engagementRate}%`} />
+        <Stat label="Combined Modifiers" value={`${pricing.combinedModifiers}x`} />
+        <Stat label="Avg Engagement" value={pricing.avgEngagement.toLocaleString()} />
       </div>
     </Card>
   );

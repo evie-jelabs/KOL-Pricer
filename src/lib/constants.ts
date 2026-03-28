@@ -1,46 +1,86 @@
 import { Domain } from "./types";
 
-// --- V5.1 Pricing Model ---
+// --- V2.1 Pricing Model ---
 
+// Overall Score weights (5 dimensions)
 export const SCORE_WEIGHTS = {
-  followerScale: 0.35,
-  updateStability: 0.30,
-  impressionStability: 0.35,
+  followerScale: 0.20,
+  followerQuality: 0.25,
+  updateStability: 0.15,
+  impressionStability: 0.20,
+  engagementRate: 0.20,
 } as const;
 
-export const BASE_CPM = 60;
+// CPM formula: $5 + (Overall Score / 100) × $75
+export const BASE_CPM = 5;
+export const MAX_CPM_BONUS = 75;
 
 // Impression decay exponent: (AvgImp / 1000) ^ IMP_DECAY
 export const IMP_DECAY = 0.85;
 
-// Follower Factor tiers
-export const FOLLOWER_FACTOR_TIERS: [number, number][] = [
-  [200_000, 1.80],
-  [80_000, 1.60],
-  [30_000, 1.40],
-  [15_000, 1.20],
-  [8_000, 1.00],
-  [3_000, 0.80],
-  [1_000, 0.65],
-  [500, 0.50],
-  [0, 0.30],
+// Follower Scale scoring tiers (8 levels, max > 60K)
+export const FOLLOWER_SCALE_TIERS: [number, number][] = [
+  [60_000, 100],
+  [40_000, 85],
+  [20_000, 70],
+  [10_000, 55],
+  [5_000, 40],
+  [3_000, 30],
+  [1_000, 20],
+  [0, 10],
+];
+
+// Follower Quality (ER%) scoring tiers
+export const FOLLOWER_QUALITY_TIERS: [number, number][] = [
+  [2.0, 100],
+  [1.0, 75],
+  [0.5, 50],
+  [0.1, 25],
+  [0, 10],
+];
+
+// Update Stability (CV) scoring tiers
+export const UPDATE_STABILITY_TIERS: [number, number][] = [
+  [0, 100],   // CV < 0.2 → 100
+  [0.2, 80],
+  [0.4, 60],
+  [0.6, 40],
+  [1.0, 20],
+];
+
+// Impression Stability (CV) scoring tiers
+export const IMPRESSION_STABILITY_TIERS: [number, number][] = [
+  [0, 100],   // CV < 0.2 → 100
+  [0.2, 80],
+  [0.4, 60],
+  [0.6, 40],
+  [0.8, 20],
+];
+
+// Engagement Rate scoring tiers
+export const ENGAGEMENT_RATE_TIERS: [number, number][] = [
+  [3.0, 100],
+  [2.0, 80],
+  [1.0, 60],
+  [0.5, 40],
+  [0, 20],
 ];
 
 // Domain multipliers
 export const DOMAIN_MULTIPLIERS: Record<Domain, number> = {
-  crypto: 1.4,
-  tech: 1.3,
-  finance: 1.4,
-  business: 1.2,
-  entertainment: 1.0,
-  other: 1.0,
+  crypto: 1.40,
+  tech: 1.30,
+  finance: 1.25,
+  business: 1.10,
+  entertainment: 1.00,
+  other: 0.90,
 };
 
 export const DOMAIN_LABELS: Record<Domain, string> = {
   crypto: "Crypto / Web3",
-  tech: "Technology",
+  tech: "AI / Technology",
   finance: "Finance",
-  business: "Business",
+  business: "Business / Gaming",
   entertainment: "Entertainment",
   other: "Other",
 };
@@ -54,55 +94,37 @@ export const IDENTITY_MULTIPLIERS: Record<string, number> = {
 
 // Capability multipliers
 export const CAPABILITY_MULTIPLIERS: Record<string, number> = {
-  Branding: 1.10,
-  Trading: 1.10,
-  Traffic: 0.90,
+  Branding: 1.20,
+  Trading: 1.00,
+  Traffic: 0.80,
 };
 
-// Credibility multiplier tiers (max 1.00, penalty-only)
+// Credibility multiplier tiers (max 1.25x)
 export const CREDIBILITY_TIERS: [number, number][] = [
-  [85, 1.00],
-  [70, 0.90],
-  [55, 0.70],
-  [40, 0.45],
+  [85, 1.25],
+  [70, 1.00],
+  [55, 0.75],
+  [40, 0.50],
   [0, 0.25],
 ];
 
-// Relevance multiplier tiers (max 1.00, penalty-only)
+// Relevance multiplier tiers (max 1.25x)
 export const RELEVANCE_TIERS: [number, number][] = [
-  [85, 1.00],
-  [70, 0.90],
-  [55, 0.70],
-  [40, 0.45],
-  [0, 0.25],
-];
-
-// Engagement Rate multiplier tiers
-export const ER_TIERS: [number, number][] = [
-  [2.0, 1.10],
-  [1.0, 1.00],
-  [0.5, 0.90],
-  [0.2, 0.80],
-  [0, 0.60],
-];
-
-// Reach Efficiency multiplier tiers
-export const RE_TIERS: [number, number][] = [
-  [20, 1.10],
-  [10, 1.00],
-  [5, 0.90],
-  [2, 0.80],
-  [0, 0.60],
+  [85, 1.25],
+  [70, 1.00],
+  [55, 0.75],
+  [40, 0.55],
+  [0, 0.30],
 ];
 
 // Price Floor tiers (only for followers ≤ 80K)
 export const FLOOR_TIERS: [number, number][] = [
-  [30_000, 500],
-  [15_000, 500],
-  [8_000, 350],
-  [3_000, 200],
-  [1_000, 100],
-  [0, 50],
+  [30_000, 450],
+  [15_000, 400],
+  [8_000, 300],
+  [3_000, 150],
+  [1_000, 50],
+  [0, 0],
 ];
 
 export const FLOOR_MAX_FOLLOWERS = 80_000;

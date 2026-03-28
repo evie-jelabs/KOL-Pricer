@@ -78,8 +78,9 @@ async function analyzeOne(handle: string, actualPrice: number | null) {
     // Step 6: Calculate scores (for display)
     const scores = calculateScores(followers, cleaned);
 
-    // Step 7: V5.1 pricing
+    // Step 7: V2.1 pricing
     const pricing = calculatePricing(
+      scores,
       cleaned,
       followers,
       domain,
@@ -95,7 +96,7 @@ async function analyzeOne(handle: string, actualPrice: number | null) {
       : null;
 
     console.log(
-      `@${handle.padEnd(18)} | ${String(followers).padStart(8)} flw | ${String(pricing.avgImpressions).padStart(7)} avgImp | EffImp ${pricing.effectiveImpressions.toFixed(1).padStart(5)} | FF ${pricing.followerFactor} | Dom ${pricing.domainMultiplier} | Cred ${analysis.credibilityScore}→${pricing.credibilityMultiplier}x | Relev ${analysis.relevanceScore}→${pricing.relevanceMultiplier}x | Id ${analysis.identityTags.join("+")}×${analysis.capabilityTags.join("+")}→${pricing.identityMultiplier}x | ER ${pricing.engagementRate}%→${pricing.erMultiplier}x | RE ${pricing.reachEfficiency}%→${pricing.reMultiplier}x | Mods ${pricing.combinedModifiers}x | Tw ${tweets.length}→${trimmed.length}→${cleaned.length} | $${String(pricing.price).padStart(6)}${pricing.floorApplied ? "(floor)" : ""} | Actual ${actualPrice ? "$" + actualPrice : "-".padStart(6)} | Dev ${deviation !== null ? deviation.toFixed(0) + "%" : "-"}`
+      `@${handle.padEnd(18)} | ${String(followers).padStart(8)} flw | ${String(pricing.avgImpressions).padStart(7)} avgImp | EffImp ${pricing.effectiveImpressions.toFixed(1).padStart(5)} | Score ${pricing.overallScore} | CPM $${pricing.cpm} | Dom ${pricing.domainMultiplier} | Cred ${analysis.credibilityScore}→${pricing.credibilityMultiplier}x | Relev ${analysis.relevanceScore}→${pricing.relevanceMultiplier}x | Id ${analysis.identityTags.join("+")}×${analysis.capabilityTags.join("+")}→${pricing.identityMultiplier}x | Mods ${pricing.combinedModifiers}x | Tw ${tweets.length}→${trimmed.length}→${cleaned.length} | $${String(pricing.price).padStart(6)}${pricing.floorApplied ? "(floor)" : ""} | Actual ${actualPrice ? "$" + actualPrice : "-".padStart(6)} | Dev ${deviation !== null ? deviation.toFixed(0) + "%" : "-"}`
     );
 
     return {

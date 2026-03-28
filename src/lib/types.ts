@@ -40,8 +40,10 @@ export type Domain =
 
 export interface ScoreBreakdown {
   followerScale: number;
+  followerQuality: number;
   updateStability: number;
   impressionStability: number;
+  engagementRate: number;
   overall: number;
 }
 
@@ -59,16 +61,14 @@ export interface ClaudeAnalysis {
 }
 
 export interface PricingResult {
-  baseCpm: number;
+  cpm: number;
+  overallScore: number;
   avgImpressions: number;
   effectiveImpressions: number;
-  followerFactor: number;
   domainMultiplier: number;
   credibilityMultiplier: number;
   relevanceMultiplier: number;
   identityMultiplier: number;
-  erMultiplier: number;
-  reMultiplier: number;
   combinedModifiers: number;
   calculatedPrice: number;
   floor: number;
@@ -78,7 +78,6 @@ export interface PricingResult {
   priceMax: number;
   avgEngagement: number;
   engagementRate: number;
-  reachEfficiency: number;
 }
 
 export interface AnalysisResult {

@@ -175,15 +175,21 @@ export async function POST(req: NextRequest) {
           "success"
         );
 
-        // Step 6: Calculate scores (for display, not used in pricing formula)
+        // Step 6: Calculate 5-dimension scores
+        sendLog("Calculating scores (5 dimensions)...");
         const scores = calculateScores(
           user.public_metrics.followers_count,
           cleaned
         );
+        sendLog(
+          `Overall Score: ${scores.overall.toFixed(1)}/100`,
+          "success"
+        );
 
-        // Step 7: Calculate V5.1 pricing
-        sendLog("Computing V5.1 pricing...");
+        // Step 7: Calculate V2.1 pricing
+        sendLog("Computing pricing...");
         const pricing = calculatePricing(
+          scores,
           cleaned,
           user.public_metrics.followers_count,
           domain,
@@ -194,7 +200,7 @@ export async function POST(req: NextRequest) {
         );
 
         sendLog(
-          `FF: ${pricing.followerFactor}x | Dom: ${pricing.domainMultiplier}x | Cred: ${pricing.credibilityMultiplier}x | Relev: ${pricing.relevanceMultiplier}x | Id: ${pricing.identityMultiplier}x | ER: ${pricing.erMultiplier}x | RE: ${pricing.reMultiplier}x`,
+          `CPM: $${pricing.cpm} | Dom: ${pricing.domainMultiplier}x | Cred: ${pricing.credibilityMultiplier}x | Relev: ${pricing.relevanceMultiplier}x | Id: ${pricing.identityMultiplier}x`,
           "success"
         );
         sendLog(

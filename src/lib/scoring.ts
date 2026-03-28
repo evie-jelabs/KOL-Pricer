@@ -1,15 +1,17 @@
 import { Tweet, Domain, ScoreBreakdown, PricingResult, IdentityTag, CapabilityTag } from "./types";
 import {
+  SCORE_WEIGHTS,
   BASE_CPM,
+  MAX_CPM_BONUS,
   IMP_DECAY,
-  FOLLOWER_FACTOR_TIERS,
+  FOLLOWER_SCALE_TIERS,
+  FOLLOWER_QUALITY_TIERS,
+  ENGAGEMENT_RATE_TIERS,
   DOMAIN_MULTIPLIERS,
   IDENTITY_MULTIPLIERS,
   CAPABILITY_MULTIPLIERS,
   CREDIBILITY_TIERS,
   RELEVANCE_TIERS,
-  ER_TIERS,
-  RE_TIERS,
   FLOOR_TIERS,
   FLOOR_MAX_FOLLOWERS,
   TRIM_COUNT,
@@ -18,49 +20,60 @@ import {
   PRICE_RANGE_HIGH,
 } from "./constants";
 
-// Re-export SCORE_WEIGHTS for backward compat — define here if not in constants
-// (It's used by route.ts for logging)
+// --- Tier lookup helpers ---
 
-// --- Tier lookup helper ---
-
-function lookupTier(tiers: [number, number][], value: number): number {
-  for (const [threshold, multiplier] of tiers) {
-    if (value >= threshold) return multiplier;
+/** For "higher is better" tiers (follower count, ER, etc.) */
+function lookupTierDesc(tiers: [number, number][], value: number): number {
+  for (const [threshold, score] of tiers) {
+    if (value >= threshold) return score;
   }
   return tiers[tiers.length - 1][1];
 }
 
-// --- Follower Factor ---
+// --- Scoring functions ---
 
-export function getFollowerFactor(followers: number): number {
-  return lookupTier(FOLLOWER_FACTOR_TIERS, followers);
+export function scoreFollowerScale(followers: number): number {
+  return lookupTierDesc(FOLLOWER_SCALE_TIERS, followers);
 }
 
-// --- Credibility / Relevance / ER / RE multipliers ---
+export function scoreFollowerQuality(er: number): number {
+  return lookupTierDesc(FOLLOWER_QUALITY_TIERS, er);
+}
+
+export function scoreUpdateStability(cv: number): number {
+  if (cv < 0.2) return 100;
+  if (cv < 0.4) return 80;
+  if (cv < 0.6) return 60;
+  if (cv < 1.0) return 40;
+  return 20;
+}
+
+export function scoreImpressionStability(cv: number): number {
+  if (cv < 0.2) return 100;
+  if (cv < 0.4) return 80;
+  if (cv < 0.6) return 60;
+  if (cv < 0.8) return 40;
+  return 20;
+}
+
+export function scoreEngagementRate(er: number): number {
+  return lookupTierDesc(ENGAGEMENT_RATE_TIERS, er);
+}
+
+// --- Multiplier functions ---
 
 export function credibilityToMultiplier(score: number): number {
-  return lookupTier(CREDIBILITY_TIERS, score);
+  return lookupTierDesc(CREDIBILITY_TIERS, score);
 }
 
 export function relevanceToMultiplier(score: number): number {
-  return lookupTier(RELEVANCE_TIERS, score);
+  return lookupTierDesc(RELEVANCE_TIERS, score);
 }
-
-export function erToMultiplier(er: number): number {
-  return lookupTier(ER_TIERS, er);
-}
-
-export function reToMultiplier(re: number): number {
-  return lookupTier(RE_TIERS, re);
-}
-
-// --- Identity Multiplier (身份 × 能力) ---
 
 export function identityToMultiplier(
   identityTags: IdentityTag[],
   capabilityTags: CapabilityTag[]
 ): number {
-  // Identity: take the highest multiplier among tags
   let identityFactor = 1.00;
   if (identityTags.length > 0) {
     identityFactor = Math.max(
@@ -68,7 +81,6 @@ export function identityToMultiplier(
     );
   }
 
-  // Capability: take the highest multiplier among tags
   let capabilityFactor = 1.00;
   if (capabilityTags.length > 0) {
     capabilityFactor = Math.max(
@@ -81,7 +93,6 @@ export function identityToMultiplier(
 
 // --- Outlier trimming ---
 
-/** Remove top N and bottom N tweets by impression count */
 export function trimOutliers(tweets: Tweet[], n: number = TRIM_COUNT): Tweet[] {
   if (tweets.length <= n * 2) return tweets;
   const sorted = [...tweets].sort(
@@ -90,7 +101,6 @@ export function trimOutliers(tweets: Tweet[], n: number = TRIM_COUNT): Tweet[] {
   return sorted.slice(n, sorted.length - n);
 }
 
-/** Remove IQR outliers from tweets */
 export function removeIQROutliers(tweets: Tweet[]): Tweet[] {
   if (tweets.length < 4) return tweets;
 
@@ -135,82 +145,79 @@ function calcPostingIntervals(tweets: Tweet[]): number[] {
     const diff =
       new Date(sorted[i].created_at).getTime() -
       new Date(sorted[i + 1].created_at).getTime();
-    intervals.push(diff / (1000 * 60 * 60)); // hours
+    intervals.push(diff / (1000 * 60 * 60));
   }
   return intervals;
 }
 
-// --- Score weights re-exported for convenience ---
-
-// --- Main scoring (3 dimensions) ---
+// --- Main scoring (5 dimensions) ---
 
 export function calculateScores(
   followers: number,
   tweets: Tweet[]
 ): ScoreBreakdown {
   const impressions = tweets.map((t) => t.public_metrics.impression_count);
-  const impressionCV = coefficientOfVariation(impressions);
+  const avgImpressions = impressions.length > 0
+    ? impressions.reduce((a, b) => a + b, 0) / impressions.length
+    : 0;
 
+  const totalEngagement = tweets.reduce((sum, t) => {
+    const m = t.public_metrics;
+    return sum + m.like_count + m.reply_count + m.retweet_count + m.quote_count;
+  }, 0);
+  const avgEngagement = tweets.length > 0 ? totalEngagement / tweets.length : 0;
+
+  // ER for scoring: avg engagement / followers
+  const er = followers > 0 ? (avgEngagement / followers) * 100 : 0;
+
+  // ER for engagement rate dimension: avg engagement / avg impressions
+  const erImpressions = avgImpressions > 0 ? (avgEngagement / avgImpressions) * 100 : 0;
+
+  const impressionCV = coefficientOfVariation(impressions);
   const intervals = calcPostingIntervals(tweets);
   const updateCV = coefficientOfVariation(intervals);
 
   const followerScale = scoreFollowerScale(followers);
-  const updateStability = scoreStability(updateCV);
-  const impressionStability = scoreStability(impressionCV);
+  const followerQuality = scoreFollowerQuality(er);
+  const updateStability = scoreUpdateStability(updateCV);
+  const impressionStability = scoreImpressionStability(impressionCV);
+  const engagementRate = scoreEngagementRate(erImpressions);
 
   const overall =
-    followerScale * 0.35 +
-    updateStability * 0.30 +
-    impressionStability * 0.35;
+    followerScale * SCORE_WEIGHTS.followerScale +
+    followerQuality * SCORE_WEIGHTS.followerQuality +
+    updateStability * SCORE_WEIGHTS.updateStability +
+    impressionStability * SCORE_WEIGHTS.impressionStability +
+    engagementRate * SCORE_WEIGHTS.engagementRate;
 
   return {
     followerScale,
+    followerQuality,
     updateStability,
     impressionStability,
+    engagementRate,
     overall,
   };
-}
-
-function scoreFollowerScale(followers: number): number {
-  if (followers > 200_000) return 90;
-  if (followers >= 80_000) return 85;
-  if (followers >= 30_000) return 75;
-  if (followers >= 15_000) return 65;
-  if (followers >= 8_000) return 55;
-  if (followers >= 3_000) return 45;
-  if (followers >= 1_000) return 35;
-  if (followers >= 500) return 25;
-  return 15;
-}
-
-function scoreStability(cv: number): number {
-  if (cv < 0.3) return 95;
-  if (cv <= 0.5) return 85;
-  if (cv <= 0.8) return 70;
-  if (cv <= 1.2) return 50;
-  return 30;
 }
 
 // --- Price Floor ---
 
 export function getPriceFloor(followers: number, credibilityScore: number): number {
-  // No floor for > 80K followers
   if (followers > FLOOR_MAX_FOLLOWERS) return 0;
-
-  // No floor for low credibility
   if (credibilityScore < 55) return 0;
 
-  const baseFloor = lookupTier(FLOOR_TIERS, followers);
+  const baseFloor = lookupTierDesc(FLOOR_TIERS, followers);
+  if (baseFloor === 0) return 0;
 
-  // Half floor for medium credibility
   if (credibilityScore < 70) return Math.round(baseFloor * 0.5);
 
   return baseFloor;
 }
 
-// --- V5.1 Pricing ---
+// --- V2.1 Pricing ---
 
 export function calculatePricing(
+  scores: ScoreBreakdown,
   tweets: Tweet[],
   followers: number,
   domain: Domain,
@@ -219,48 +226,39 @@ export function calculatePricing(
   identityTags: IdentityTag[],
   capabilityTags: CapabilityTag[]
 ): PricingResult {
-  // Avg impressions
   const impressions = tweets.map((t) => t.public_metrics.impression_count);
-  const avgImpressions =
-    impressions.length > 0
-      ? impressions.reduce((a, b) => a + b, 0) / impressions.length
-      : 0;
+  const avgImpressions = impressions.length > 0
+    ? impressions.reduce((a, b) => a + b, 0) / impressions.length
+    : 0;
 
   // Effective impressions with decay
   const effectiveImpressions = Math.pow(avgImpressions / 1000, IMP_DECAY);
 
-  // Avg engagement & rates
+  // Avg engagement & ER
   const totalEngagement = tweets.reduce((sum, t) => {
     const m = t.public_metrics;
     return sum + m.like_count + m.reply_count + m.retweet_count + m.quote_count;
   }, 0);
   const avgEngagement = tweets.length > 0 ? totalEngagement / tweets.length : 0;
+  const engagementRate = followers > 0 ? (avgEngagement / followers) * 100 : 0;
 
-  // ER = avg engagement / avg impressions × 100
-  const engagementRate = avgImpressions > 0 ? (avgEngagement / avgImpressions) * 100 : 0;
+  // CPM
+  const cpm = BASE_CPM + (scores.overall / 100) * MAX_CPM_BONUS;
 
-  // RE = avg impressions / followers × 100
-  const reachEfficiency = followers > 0 ? (avgImpressions / followers) * 100 : 0;
-
-  // All 7 modifiers
-  const followerFactor = getFollowerFactor(followers);
+  // 4 Modifiers
   const domainMultiplier = DOMAIN_MULTIPLIERS[domain];
   const credibilityMultiplier = credibilityToMultiplier(credibilityScore);
   const relevanceMultiplier = relevanceToMultiplier(relevanceScore);
   const identityMultiplier = identityToMultiplier(identityTags, capabilityTags);
-  const erMultiplier = erToMultiplier(engagementRate);
-  const reMultiplier = reToMultiplier(reachEfficiency);
 
   const combinedModifiers =
-    followerFactor *
     domainMultiplier *
     credibilityMultiplier *
     relevanceMultiplier *
-    identityMultiplier *
-    erMultiplier *
-    reMultiplier;
+    identityMultiplier;
 
-  const calculatedPrice = BASE_CPM * effectiveImpressions * combinedModifiers;
+  // Price = CPM × (AvgImp/1000)^0.85 × Modifiers
+  const calculatedPrice = cpm * effectiveImpressions * combinedModifiers;
 
   // Floor
   const floor = getPriceFloor(followers, credibilityScore);
@@ -268,16 +266,14 @@ export function calculatePricing(
   const price = Math.max(calculatedPrice, floor);
 
   return {
-    baseCpm: BASE_CPM,
+    cpm: Math.round(cpm * 100) / 100,
+    overallScore: Math.round(scores.overall * 10) / 10,
     avgImpressions: Math.round(avgImpressions),
     effectiveImpressions: Math.round(effectiveImpressions * 100) / 100,
-    followerFactor,
     domainMultiplier,
     credibilityMultiplier,
     relevanceMultiplier,
     identityMultiplier,
-    erMultiplier,
-    reMultiplier,
     combinedModifiers: Math.round(combinedModifiers * 100) / 100,
     calculatedPrice: Math.round(calculatedPrice),
     floor,
@@ -287,6 +283,5 @@ export function calculatePricing(
     priceMax: Math.round(price * PRICE_RANGE_HIGH),
     avgEngagement: Math.round(avgEngagement),
     engagementRate: Math.round(engagementRate * 1000) / 1000,
-    reachEfficiency: Math.round(reachEfficiency * 100) / 100,
   };
 }

@@ -17,17 +17,15 @@ export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) 
         Pricing Formula
       </h3>
       <div className="space-y-2 font-mono text-sm">
-        {/* Base CPM */}
+        {/* CPM */}
         <div className="flex justify-between text-gray-400">
-          <span>Base CPM</span>
-          <span className="text-white">${pricing.baseCpm}</span>
+          <span>CPM = $5 + ({pricing.overallScore}/100) x $75</span>
+          <span className="text-white">${pricing.cpm}</span>
         </div>
 
         {/* Avg Impressions */}
         <div className="flex justify-between text-gray-400">
-          <span>
-            Avg Impressions → Effective (^0.85)
-          </span>
+          <span>Avg Imp → Effective (^0.85)</span>
           <span className="text-white">
             {pricing.avgImpressions.toLocaleString()} → {pricing.effectiveImpressions}
           </span>
@@ -43,10 +41,6 @@ export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) 
           </div>
           <div className="space-y-1 text-xs text-gray-500">
             <div className="flex justify-between">
-              <span>Follower Factor ({">"}200K=1.8x)</span>
-              <span>{pricing.followerFactor}x</span>
-            </div>
-            <div className="flex justify-between">
               <span>Domain ({domain})</span>
               <span>{pricing.domainMultiplier}x</span>
             </div>
@@ -59,18 +53,8 @@ export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) 
               <span>{pricing.relevanceMultiplier}x</span>
             </div>
             <div className="flex justify-between">
-              <span>
-                Identity ({identityLabel} × {capabilityLabel})
-              </span>
+              <span>Identity ({identityLabel} x {capabilityLabel})</span>
               <span>{pricing.identityMultiplier}x</span>
-            </div>
-            <div className="flex justify-between">
-              <span>ER ({pricing.engagementRate}%)</span>
-              <span>{pricing.erMultiplier}x</span>
-            </div>
-            <div className="flex justify-between">
-              <span>RE ({pricing.reachEfficiency}%)</span>
-              <span>{pricing.reMultiplier}x</span>
             </div>
           </div>
         </div>
@@ -87,7 +71,7 @@ export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) 
         <div className="border-t border-gray-700 pt-2">
           <div className="flex justify-between font-semibold">
             <span className="text-gray-300">
-              Price = ${pricing.baseCpm} × {pricing.effectiveImpressions} × {pricing.combinedModifiers}x
+              Price = CPM x Eff.Imp x {pricing.combinedModifiers}x
             </span>
             <span className="text-brand">${pricing.price.toLocaleString()}</span>
           </div>
