@@ -50,7 +50,7 @@ export default function HowPage() {
           <StepCard
             step={7}
             title="Final Pricing"
-            desc="CPM = $5 + (Score/100) x $75. Price = CPM x (AvgImp/1000)^0.85 x Modifiers. A Price Floor protects small accounts (≤80K followers) with good credibility. The final range is ±20%."
+            desc="CPM = $5 + (Score/100) x $75. Price = CPM x (AvgImp/1000) x Modifiers (weighted average: Cred 35% + Relev 25% + Domain 20% + Identity 20%). A Price Floor protects small accounts (≤80K followers) with good credibility. The final range is ±20%."
           />
         </div>
       </section>
@@ -71,16 +71,12 @@ export default function HowPage() {
               formula="$5 + (Overall Score / 100) x $75"
             />
             <FormulaLine
-              label="Effective Imp"
-              formula="(Avg Impressions / 1000) ^ 0.85"
-            />
-            <FormulaLine
               label="Modifiers"
-              formula="Domain x Credibility x Relevance x Identity"
+              formula="Cred x 35% + Relev x 25% + Domain x 20% + Identity x 20%"
             />
             <FormulaLine
               label="Price"
-              formula="CPM x Effective Imp x Modifiers"
+              formula="CPM x (Avg Impressions / 1000) x Modifiers"
             />
             <FormulaLine
               label="Final"
@@ -114,22 +110,22 @@ export default function HowPage() {
           title="Follower Quality — ER% (25%)"
           description="Evaluates how engaged the KOL's audience is. Calculated as: average interactions per tweet divided by follower count. A high ER means followers actively interact — not just passive or bot accounts."
           rows={[
-            ["> 2%", "100"],
-            ["1% - 2%", "75"],
-            ["0.5% - 1%", "50"],
-            ["0.1% - 0.5%", "25"],
-            ["< 0.1%", "10"],
+            ["> 1.5%", "100"],
+            ["0.8% - 1.5%", "75"],
+            ["0.3% - 0.8%", "50"],
+            ["0.08% - 0.3%", "25"],
+            ["< 0.08%", "10"],
           ]}
         />
         <DimensionCard
           title="Update Stability — CV (15%)"
           description="Measures how consistently the KOL posts. We calculate the Coefficient of Variation of posting intervals. Low CV means regular posting — advertisers can rely on consistent output."
           rows={[
-            ["< 0.2", "100"],
-            ["0.2 - 0.4", "80"],
-            ["0.4 - 0.6", "60"],
-            ["0.6 - 1.0", "40"],
-            ["> 1.0", "20"],
+            ["< 0.3", "100"],
+            ["0.3 - 0.5", "80"],
+            ["0.5 - 0.8", "60"],
+            ["0.8 - 1.2", "40"],
+            ["> 1.2", "20"],
           ]}
         />
         <DimensionCard
@@ -147,10 +143,10 @@ export default function HowPage() {
           title="Engagement Rate — ER% (20%)"
           description="Absolute measure of interaction per impression. Uses stricter thresholds to differentiate exceptional engagement from average performance."
           rows={[
-            ["> 3%", "100"],
-            ["2% - 3%", "80"],
-            ["1% - 2%", "60"],
-            ["0.5% - 1%", "40"],
+            ["> 2%", "100"],
+            ["1.5% - 2%", "80"],
+            ["0.8% - 1.5%", "60"],
+            ["0.3% - 0.8%", "40"],
             ["< 0.5%", "20"],
           ]}
         />
@@ -159,11 +155,15 @@ export default function HowPage() {
       {/* Modifiers */}
       <section className="mt-16 space-y-6">
         <h2 className="font-outfit text-2xl font-semibold text-white">
-          4 Modifiers
+          4 Modifiers (Weighted Average)
         </h2>
+        <p className="text-gray-400">
+          Modifiers are combined using a weighted average instead of multiplication,
+          preventing compounding penalties and excessive bonuses.
+        </p>
 
         <DimensionCard
-          title="1. Domain"
+          title="1. Domain (weight: 20%)"
           description="Different industries have different CPM benchmarks."
           rows={[
             ["Crypto / Web3", "1.40x"],
@@ -176,7 +176,7 @@ export default function HowPage() {
         />
 
         <DimensionCard
-          title="2. Credibility (AI-evaluated, max 1.25x)"
+          title="2. Credibility (weight: 35%, max 1.25x)"
           description="Claude AI evaluates account authenticity: follower-to-engagement ratio, posting patterns, content originality, and signs of manipulation."
           rows={[
             ["85 - 100", "1.25x"],
@@ -188,7 +188,7 @@ export default function HowPage() {
         />
 
         <DimensionCard
-          title="3. Relevance (AI-evaluated, max 1.25x)"
+          title="3. Relevance (weight: 25%, max 1.25x)"
           description="Claude AI judges each tweet's relevance to the account's domain. Only substantive domain content counts as relevant."
           rows={[
             ["85 - 100", "1.25x"],
@@ -200,7 +200,7 @@ export default function HowPage() {
         />
 
         <DimensionCard
-          title="4. Identity (AI-evaluated)"
+          title="4. Identity (weight: 20%)"
           description="Identity = Role x Capability. Role: Builder (founder/dev/researcher) = 1.20x, KOL = 1.10x, Content Creator = 1.00x. Capability: Branding = 1.20x, Trading = 1.00x, Traffic = 0.80x."
           rows={[
             ["Builder x Branding", "1.44x"],
@@ -249,39 +249,6 @@ export default function HowPage() {
         </Card>
       </section>
 
-      {/* Impression Decay */}
-      <section className="mt-16 space-y-6">
-        <h2 className="font-outfit text-2xl font-semibold text-white">
-          Impression Decay
-        </h2>
-        <p className="text-gray-400">
-          To prevent large accounts from being overpriced, we apply diminishing
-          returns on impressions: (AvgImp / 1000) ^ 0.85. This compresses high
-          impression counts while keeping small accounts mostly unaffected.
-        </p>
-        <Card>
-          <div className="space-y-1">
-            {[
-              ["2,000", "1.81", "91%"],
-              ["5,000", "4.23", "85%"],
-              ["15,000", "11.4", "76%"],
-              ["25,000", "18.1", "72%"],
-              ["50,000", "32.7", "65%"],
-              ["100,000", "56.2", "56%"],
-            ].map(([raw, effective, ratio]) => (
-              <div
-                key={raw}
-                className="flex items-center justify-between rounded-lg px-3 py-1.5 font-mono text-sm odd:bg-gray-800/30"
-              >
-                <span className="text-gray-400">{raw}</span>
-                <span className="text-gray-500">→</span>
-                <span className="text-white">{effective}</span>
-                <span className="text-gray-500">({ratio})</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </section>
     </div>
   );
 }
