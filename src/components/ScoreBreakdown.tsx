@@ -7,11 +7,9 @@ interface Props {
 }
 
 const LABELS: { key: keyof Omit<ScoreBreakdownType, "overall">; label: string; weight: string }[] = [
-  { key: "followerScale", label: "Follower Scale", weight: "20%" },
-  { key: "followerQuality", label: "Follower Quality (ER)", weight: "25%" },
-  { key: "updateStability", label: "Update Stability", weight: "15%" },
-  { key: "impressionStability", label: "Impression Stability", weight: "20%" },
-  { key: "engagementRate", label: "Engagement Rate", weight: "20%" },
+  { key: "followerScale", label: "Follower Scale", weight: "35%" },
+  { key: "updateStability", label: "Update Stability", weight: "30%" },
+  { key: "impressionStability", label: "Impression Stability", weight: "35%" },
 ];
 
 export default function ScoreBreakdown({ scores }: Props) {

@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
 import { getUserByUsername, getUserTweets } from "@/lib/x-api";
 import { analyzeAccount } from "@/lib/anthropic";
-import { calculateScores, calculatePricing, trimOutliers } from "@/lib/scoring";
+import {
+  calculateScores,
+  calculatePricing,
+  trimOutliers,
+  removeIQROutliers,
+} from "@/lib/scoring";
 import { RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS } from "@/lib/constants";
 
 // Simple in-memory rate limiter
@@ -45,6 +50,8 @@ function parseHandle(input: string): string {
   }
   // Remove @ prefix
   handle = handle.replace(/^@/, "");
+  // Remove query params like ?s=21
+  handle = handle.split("?")[0];
   return handle;
 }
 
@@ -112,24 +119,39 @@ export async function POST(req: NextRequest) {
         );
 
         // Step 2: Fetch recent tweets
-        sendLog("Fetching recent tweets...");
+        sendLog("Fetching 30 recent original tweets...");
         const tweets = await getUserTweets(user.id, 30);
         if (tweets.length === 0) {
           sendError("No tweets found for this user");
           controller.close();
           return;
         }
-        sendLog(`Loaded ${tweets.length} recent tweets`, "success");
+        sendLog(`Loaded ${tweets.length} tweets`, "success");
 
-        // Step 3: Trim outliers
-        const trimmed = trimOutliers(tweets, 2);
+        // Step 3: Trim top/bottom 3 outliers
+        const trimmed = trimOutliers(tweets, 3);
         sendLog(
-          `Trimmed ${tweets.length - trimmed.length} outlier tweets (top/bottom by impressions), using ${trimmed.length} for scoring`,
+          `Trimmed top/bottom 3 by impressions → ${trimmed.length} tweets`,
           "success"
         );
 
-        // Step 4: AI analysis (domain + credibility + relevance + tags)
-        sendLog("Analyzing with AI (domain, credibility, relevance, tags)...");
+        // Step 4: IQR anomaly detection
+        const cleaned = removeIQROutliers(trimmed);
+        const iqrRemoved = trimmed.length - cleaned.length;
+        if (iqrRemoved > 0) {
+          sendLog(
+            `IQR 1.5x filter removed ${iqrRemoved} anomalous tweets → ${cleaned.length} tweets for scoring`,
+            "success"
+          );
+        } else {
+          sendLog(
+            `IQR filter: no additional outliers found, using ${cleaned.length} tweets`,
+            "success"
+          );
+        }
+
+        // Step 5: AI analysis (domain + credibility + relevance + tags)
+        sendLog("Analyzing with Claude AI (domain, credibility, relevance, tags)...");
         const tweetTexts = tweets.map((t) => t.text);
         const { domain, analysis: claudeAnalysis } = await analyzeAccount(
           user.description || "",
@@ -149,38 +171,44 @@ export async function POST(req: NextRequest) {
           "success"
         );
         sendLog(
-          `Tags: [${claudeAnalysis.identityTags.join(", ")}] [${claudeAnalysis.capabilityTags.join(", ")}]`,
+          `Tags: [${claudeAnalysis.identityTags.join(", ")}] | [${claudeAnalysis.capabilityTags.join(", ")}]`,
           "success"
         );
 
-        // Step 5: Calculate scores
-        sendLog("Calculating scores...");
+        // Step 6: Calculate scores (for display, not used in pricing formula)
         const scores = calculateScores(
           user.public_metrics.followers_count,
-          trimmed
-        );
-        sendLog(
-          `Overall score: ${scores.overall.toFixed(1)}/100`,
-          "success"
+          cleaned
         );
 
-        // Step 6: Calculate pricing (with credibility & relevance multipliers)
-        sendLog("Computing pricing...");
+        // Step 7: Calculate V5.1 pricing
+        sendLog("Computing V5.1 pricing...");
         const pricing = calculatePricing(
-          scores,
-          trimmed,
+          cleaned,
           user.public_metrics.followers_count,
           domain,
           claudeAnalysis.credibilityScore,
           claudeAnalysis.relevanceScore,
-          claudeAnalysis.identityTags
+          claudeAnalysis.identityTags,
+          claudeAnalysis.capabilityTags
         );
+
         sendLog(
-          `Credibility: ${pricing.credibilityMultiplier}x | Relevance: ${pricing.relevanceMultiplier}x | Identity: ${pricing.identityMultiplier}x`,
+          `FF: ${pricing.followerFactor}x | Dom: ${pricing.domainMultiplier}x | Cred: ${pricing.credibilityMultiplier}x | Relev: ${pricing.relevanceMultiplier}x | Id: ${pricing.identityMultiplier}x | ER: ${pricing.erMultiplier}x | RE: ${pricing.reMultiplier}x`,
           "success"
         );
         sendLog(
-          `Estimated price: $${pricing.price.toLocaleString()}`,
+          `Combined Modifiers: ${pricing.combinedModifiers}x`,
+          "success"
+        );
+        if (pricing.floorApplied) {
+          sendLog(
+            `Price Floor applied: $${pricing.floor} (calculated: $${pricing.calculatedPrice})`,
+            "success"
+          );
+        }
+        sendLog(
+          `Estimated price: $${pricing.price.toLocaleString()} ($${pricing.priceMin.toLocaleString()} ~ $${pricing.priceMax.toLocaleString()})`,
           "success"
         );
 
@@ -188,6 +216,7 @@ export async function POST(req: NextRequest) {
         sendResult({
           user,
           tweets,
+          trimmedTweets: cleaned,
           domain,
           scores,
           pricing,

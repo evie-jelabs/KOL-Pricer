@@ -192,9 +192,9 @@ export default function ToolPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <PriceRange pricing={result.pricing} />
             <FormulaCard
-              scores={result.scores}
               pricing={result.pricing}
               domain={result.domain}
+              claudeAnalysis={result.claudeAnalysis}
             />
           </div>
           {result.claudeAnalysis && (

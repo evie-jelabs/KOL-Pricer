@@ -1,55 +1,99 @@
-import { ScoreBreakdown as ScoreBreakdownType, PricingResult, Domain } from "@/lib/types";
+import { PricingResult, Domain, ClaudeAnalysis } from "@/lib/types";
 import Card from "./Card";
 
 interface Props {
-  scores: ScoreBreakdownType;
   pricing: PricingResult;
   domain: Domain;
+  claudeAnalysis: ClaudeAnalysis;
 }
 
-export default function FormulaCard({ scores, pricing, domain }: Props) {
+export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) {
+  const identityLabel = claudeAnalysis.identityTags.join("+");
+  const capabilityLabel = claudeAnalysis.capabilityTags.join("+");
+
   return (
     <Card>
       <h3 className="mb-4 font-outfit text-lg font-semibold text-white">
         Pricing Formula
       </h3>
       <div className="space-y-2 font-mono text-sm">
+        {/* Base CPM */}
         <div className="flex justify-between text-gray-400">
-          <span>Overall Score</span>
-          <span className="text-white">{scores.overall.toFixed(1)}</span>
+          <span>Base CPM</span>
+          <span className="text-white">${pricing.baseCpm}</span>
         </div>
+
+        {/* Avg Impressions */}
         <div className="flex justify-between text-gray-400">
-          <span>CPM = $5 + ({scores.overall.toFixed(1)}/100) x $75</span>
-          <span className="text-white">${pricing.cpm}</span>
-        </div>
-        <div className="flex justify-between text-gray-400">
-          <span>Avg Impressions</span>
+          <span>
+            Avg Impressions → Effective (^0.85)
+          </span>
           <span className="text-white">
-            {pricing.avgImpressions.toLocaleString()}
+            {pricing.avgImpressions.toLocaleString()} → {pricing.effectiveImpressions}
           </span>
         </div>
-        <div className="flex justify-between text-gray-400">
-          <span>Domain ({domain})</span>
-          <span className="text-white">{pricing.domainMultiplier}x</span>
+
+        {/* Modifiers group */}
+        <div className="mt-1 rounded-lg border border-gray-700/50 bg-gray-800/30 px-3 py-2">
+          <div className="mb-2 flex justify-between text-gray-300">
+            <span className="font-semibold">Modifiers</span>
+            <span className="font-semibold text-white">
+              {pricing.combinedModifiers}x
+            </span>
+          </div>
+          <div className="space-y-1 text-xs text-gray-500">
+            <div className="flex justify-between">
+              <span>Follower Factor ({">"}200K=1.8x)</span>
+              <span>{pricing.followerFactor}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Domain ({domain})</span>
+              <span>{pricing.domainMultiplier}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Credibility</span>
+              <span>{pricing.credibilityMultiplier}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Relevance</span>
+              <span>{pricing.relevanceMultiplier}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span>
+                Identity ({identityLabel} × {capabilityLabel})
+              </span>
+              <span>{pricing.identityMultiplier}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span>ER ({pricing.engagementRate}%)</span>
+              <span>{pricing.erMultiplier}x</span>
+            </div>
+            <div className="flex justify-between">
+              <span>RE ({pricing.reachEfficiency}%)</span>
+              <span>{pricing.reMultiplier}x</span>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-between text-gray-400">
-          <span>Credibility</span>
-          <span className="text-white">{pricing.credibilityMultiplier}x</span>
-        </div>
-        <div className="flex justify-between text-gray-400">
-          <span>Relevance</span>
-          <span className="text-white">{pricing.relevanceMultiplier}x</span>
-        </div>
-        <div className="flex justify-between text-gray-400">
-          <span>Identity{pricing.identityMultiplier > 1 ? " (Builder)" : ""}</span>
-          <span className="text-white">{pricing.identityMultiplier}x</span>
-        </div>
+
+        {/* Floor */}
+        {pricing.floorApplied && (
+          <div className="flex justify-between text-xs text-yellow-500">
+            <span>Price Floor applied</span>
+            <span>${pricing.floor} (calc: ${pricing.calculatedPrice})</span>
+          </div>
+        )}
+
+        {/* Final price */}
         <div className="border-t border-gray-700 pt-2">
           <div className="flex justify-between font-semibold">
             <span className="text-gray-300">
-              Price = CPM x Imp/1000 x Dom x Cred x Rel x Id
+              Price = ${pricing.baseCpm} × {pricing.effectiveImpressions} × {pricing.combinedModifiers}x
             </span>
             <span className="text-brand">${pricing.price.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>Range</span>
+            <span>${pricing.priceMin.toLocaleString()} ~ ${pricing.priceMax.toLocaleString()}</span>
           </div>
         </div>
       </div>
