@@ -40,7 +40,7 @@ export default function HowPage() {
           <StepCard
             step={5}
             title="Claude AI Analysis"
-            desc="Claude AI analyzes the bio and tweets to determine: Domain (crypto, tech, finance, etc.), Credibility score (0-100), Relevance score (0-100), Identity tags (Builder/KOL/Content Creator), and Capability tags (Branding/Trading/Traffic)."
+            desc="Claude AI analyzes the bio and tweets to determine: Domain (crypto, tech, finance, etc.), Credibility score (0-100), Relevance score (0-100), and Identity (Builder or Content Creator)."
           />
           <StepCard
             step={6}
@@ -50,7 +50,7 @@ export default function HowPage() {
           <StepCard
             step={7}
             title="Final Pricing"
-            desc="CPM = $5 + (Score/100) x $75. Price = CPM x (AvgImp/1000) x Modifiers (weighted average: Cred 35% + Relev 25% + Domain 20% + Identity 20%). A Price Floor protects small accounts (≤80K followers) with good credibility. The final range is ±20%."
+            desc="CPM = $5 + (Score/100) x $75. Price = CPM x (AvgImp/1000) x Modifiers (Domain x Credibility x Relevance x Identity). A Price Floor protects small accounts (≤80K followers) with good credibility. The final range is ±20%."
           />
         </div>
       </section>
@@ -72,7 +72,7 @@ export default function HowPage() {
             />
             <FormulaLine
               label="Modifiers"
-              formula="Cred x 35% + Relev x 25% + Domain x 20% + Identity x 20%"
+              formula="Domain x Credibility x Relevance x Identity"
             />
             <FormulaLine
               label="Price"
@@ -155,15 +155,14 @@ export default function HowPage() {
       {/* Modifiers */}
       <section className="mt-16 space-y-6">
         <h2 className="font-outfit text-2xl font-semibold text-white">
-          4 Modifiers (Weighted Average)
+          4 Modifiers
         </h2>
         <p className="text-gray-400">
-          Modifiers are combined using a weighted average instead of multiplication,
-          preventing compounding penalties and excessive bonuses.
+          Modifiers are multiplied together to form the combined pricing adjustment.
         </p>
 
         <DimensionCard
-          title="1. Domain (weight: 20%)"
+          title="1. Domain"
           description="Different industries have different CPM benchmarks."
           rows={[
             ["Crypto / Web3", "1.40x"],
@@ -176,7 +175,7 @@ export default function HowPage() {
         />
 
         <DimensionCard
-          title="2. Credibility (weight: 35%, max 1.25x)"
+          title="2. Credibility (AI-evaluated, max 1.25x)"
           description="Claude AI evaluates account authenticity: follower-to-engagement ratio, posting patterns, content originality, and signs of manipulation."
           rows={[
             ["85 - 100", "1.25x"],
@@ -188,7 +187,7 @@ export default function HowPage() {
         />
 
         <DimensionCard
-          title="3. Relevance (weight: 25%, max 1.25x)"
+          title="3. Relevance (AI-evaluated, max 1.25x)"
           description="Claude AI judges each tweet's relevance to the account's domain. Only substantive domain content counts as relevant."
           rows={[
             ["85 - 100", "1.25x"],
@@ -200,15 +199,11 @@ export default function HowPage() {
         />
 
         <DimensionCard
-          title="4. Identity (weight: 20%)"
-          description="Identity = Role x Capability. Role: Builder (founder/dev/researcher) = 1.20x, KOL = 1.10x, Content Creator = 1.00x. Capability: Branding = 1.20x, Trading = 1.00x, Traffic = 0.80x."
+          title="4. Identity (AI-evaluated)"
+          description="Builder accounts (founders, developers, researchers) get a 1.20x premium because their endorsements carry higher trust and conversion value."
           rows={[
-            ["Builder x Branding", "1.44x"],
-            ["Builder x Trading", "1.20x"],
-            ["KOL x Branding", "1.32x"],
-            ["KOL x Trading", "1.10x"],
-            ["KOL x Traffic", "0.88x"],
-            ["CC x Traffic", "0.80x"],
+            ["Builder", "1.20x"],
+            ["Content Creator", "1.00x"],
           ]}
         />
       </section>
