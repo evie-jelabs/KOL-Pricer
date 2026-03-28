@@ -232,8 +232,8 @@ export function calculatePricing(
     ? impressions.reduce((a, b) => a + b, 0) / impressions.length
     : 0;
 
-  // Effective impressions with decay
-  const effectiveImpressions = Math.pow(avgImpressions / 1000, IMP_DECAY);
+  // Impressions in thousands
+  const effectiveImpressions = avgImpressions / 1000;
 
   // Avg engagement & ER
   const totalEngagement = tweets.reduce((sum, t) => {

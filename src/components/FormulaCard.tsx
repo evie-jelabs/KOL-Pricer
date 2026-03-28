@@ -25,7 +25,7 @@ export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) 
 
         {/* Avg Impressions */}
         <div className="flex justify-between text-gray-400">
-          <span>Avg Imp → Effective (^0.85)</span>
+          <span>Avg Impressions / 1000</span>
           <span className="text-white">
             {pricing.avgImpressions.toLocaleString()} → {pricing.effectiveImpressions}
           </span>

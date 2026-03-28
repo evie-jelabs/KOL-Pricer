@@ -24,7 +24,7 @@ export default function PriceCard({ pricing, domain }: Props) {
         <Stat label="CPM" value={`$${pricing.cpm}`} />
         <Stat label="Domain" value={DOMAIN_LABELS[domain]} />
         <Stat label="Avg Impressions" value={pricing.avgImpressions.toLocaleString()} />
-        <Stat label="Effective Imp (^0.85)" value={`${pricing.effectiveImpressions}`} />
+        <Stat label="Imp / 1000" value={`${pricing.effectiveImpressions}`} />
         <Stat label="Overall Score" value={`${pricing.overallScore}/100`} />
         <Stat label="Engagement Rate" value={`${pricing.engagementRate}%`} />
         <Stat label="Combined Modifiers" value={`${pricing.combinedModifiers}x`} />
