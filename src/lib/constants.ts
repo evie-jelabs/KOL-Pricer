@@ -127,10 +127,10 @@ export const RELEVANCE_TIERS: [number, number][] = [
 
 // Price Floor tiers (only for followers ≤ 80K)
 export const FLOOR_TIERS: [number, number][] = [
-  [30_000, 450],
-  [15_000, 400],
-  [8_000, 300],
-  [3_000, 150],
+  [30_000, 400],
+  [15_000, 300],
+  [8_000, 200],
+  [3_000, 100],
   [1_000, 50],
   [0, 0],
 ];

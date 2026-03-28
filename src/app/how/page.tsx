@@ -224,10 +224,10 @@ export default function HowPage() {
               Credibility &ge; 70: full floor | 55-69: half floor | &lt;55: no floor
             </div>
             {[
-              ["30K - 80K", "$450"],
-              ["15K - 30K", "$400"],
-              ["8K - 15K", "$300"],
-              ["3K - 8K", "$150"],
+              ["30K - 80K", "$400"],
+              ["15K - 30K", "$300"],
+              ["8K - 15K", "$200"],
+              ["3K - 8K", "$100"],
               ["1K - 3K", "$50"],
               ["< 1K", "$0"],
               ["> 80K", "No floor"],
