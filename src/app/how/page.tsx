@@ -144,14 +144,14 @@ export default function HowPage() {
             1. Influence Depth (20%)
           </h3>
           <p className="mb-4 text-sm leading-relaxed text-gray-400">
-            Composite of 3 sub-items:{" "}
+            Composite of 2 sub-items:{" "}
             <span className="text-gray-300">
-              Follower Scale (50%) + Listed Ratio (25%) + Elite Follower % (25%)
+              Follower Scale (60%) + Listed Ratio (40%)
             </span>
           </p>
           <div className="space-y-4">
             <SubDimensionTable
-              title="Sub-item 1 — Follower Scale (50%)"
+              title="Sub-item 1 — Follower Scale (60%)"
               rows={[
                 ["> 100K", "100"],
                 ["50K – 100K", "80"],
@@ -161,23 +161,13 @@ export default function HowPage() {
               ]}
             />
             <SubDimensionTable
-              title="Sub-item 2 — Listed Ratio (25%) — listed_count / followers × 1000"
+              title="Sub-item 2 — Listed Ratio (40%) — listed_count / followers × 1000"
               rows={[
                 ["> 5", "100"],
                 ["3 – 5", "75"],
                 ["1 – 3", "50"],
                 ["0.5 – 1", "25"],
                 ["< 0.5", "10"],
-              ]}
-            />
-            <SubDimensionTable
-              title="Sub-item 3 — Elite Follower % (25%) — verified_followers / followers × 100%"
-              rows={[
-                ["> 5%", "100"],
-                ["3% – 5%", "75"],
-                ["1% – 3%", "50"],
-                ["0.5% – 1%", "25"],
-                ["< 0.5%", "10"],
               ]}
             />
           </div>

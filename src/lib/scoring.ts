@@ -5,7 +5,6 @@ import {
   MAX_CPM_BONUS,
   FOLLOWER_SCALE_TIERS,
   LISTED_RATIO_TIERS,
-  VERIFIED_RATIO_TIERS,
   FOLLOWER_QUALITY_TIERS,
   CONTENT_STABILITY_BREAKPOINTS,
   CONTENT_STABILITY_CV_WEIGHTS,
@@ -127,35 +126,21 @@ export function calcWeightedEngagement(tweet: Tweet): number {
 export function calcInfluenceDepth(
   followers: number,
   listedCount: number,
-  verifiedFollowers?: number
 ): {
   score: number;
   followerScaleScore: number;
   listedScore: number;
-  verifiedScore: number;
 } {
-  // Sub-item 1: Follower Scale (50%)
+  // Sub-item 1: Follower Scale (60%)
   const followerScaleScore = lookupTierDesc(FOLLOWER_SCALE_TIERS, followers);
 
-  // Sub-item 2: Listed Ratio (25%) — listed_count / followers × 1000
+  // Sub-item 2: Listed Ratio (40%) — listed_count / followers × 1000
   const listedRatio = followers > 0 ? (listedCount / followers) * 1000 : 0;
   const listedScore = lookupTierDesc(LISTED_RATIO_TIERS, listedRatio);
 
-  // Sub-item 3: Verified Followers Ratio (25%)
-  // Falls back to listed_count / followers × 100 when unavailable
-  let verifiedScore: number;
-  if (verifiedFollowers !== undefined && verifiedFollowers > 0) {
-    const verifiedRatio = (verifiedFollowers / followers) * 100;
-    verifiedScore = lookupTierDesc(VERIFIED_RATIO_TIERS, verifiedRatio);
-  } else {
-    const listedAlt = followers > 0 ? (listedCount / followers) * 100 : 0;
-    verifiedScore = lookupTierDesc(VERIFIED_RATIO_TIERS, listedAlt);
-  }
+  const score = followerScaleScore * 0.6 + listedScore * 0.4;
 
-  const score =
-    followerScaleScore * 0.5 + listedScore * 0.25 + verifiedScore * 0.25;
-
-  return { score, followerScaleScore, listedScore, verifiedScore };
+  return { score, followerScaleScore, listedScore };
 }
 
 // ── V2: Content Stability (merged CV) ────────────────────────────────────
@@ -313,7 +298,6 @@ export function calculateScores(
     overall: Math.round(overall * 10) / 10,
     followerScaleScore: influenceDepthResult.followerScaleScore,
     listedScore: influenceDepthResult.listedScore,
-    verifiedScore: influenceDepthResult.verifiedScore,
     intervalCV: Math.round(intervalCV * 1000) / 1000,
     impressionCV: Math.round(impressionCV * 1000) / 1000,
     combinedCV: Math.round(contentStabilityResult.combinedCV * 1000) / 1000,

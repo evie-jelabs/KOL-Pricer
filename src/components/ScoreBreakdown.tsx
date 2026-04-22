@@ -28,10 +28,9 @@ export default function ScoreBreakdown({ scores }: Props) {
             label="Influence Depth (20%)"
             score={scores.influenceDepth}
           />
-          <div className="mt-1.5 grid grid-cols-3 gap-1 pl-2">
-            <SubItem label="Followers" score={scores.followerScaleScore} />
-            <SubItem label="Listed" score={scores.listedScore} />
-            <SubItem label="Elite %" score={scores.verifiedScore} />
+          <div className="mt-1.5 grid grid-cols-2 gap-1 pl-2">
+            <SubItem label="Followers (60%)" score={scores.followerScaleScore} />
+            <SubItem label="Listed Ratio (40%)" score={scores.listedScore} />
           </div>
         </div>
 

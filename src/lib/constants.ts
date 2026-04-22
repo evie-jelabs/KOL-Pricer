@@ -34,16 +34,6 @@ export const LISTED_RATIO_TIERS: [number, number][] = [
   [0, 10],
 ];
 
-// Sub-item 3: Verified Followers Ratio = verified_followers / followers × 100% (25%)
-// Falls back to listed_count proxy when verified_followers unavailable
-export const VERIFIED_RATIO_TIERS: [number, number][] = [
-  [5, 100],
-  [3, 75],
-  [1, 50],
-  [0.5, 25],
-  [0, 10],
-];
-
 // ── Follower Quality (weighted ER%) ───────────────────────────────────────
 
 export const FOLLOWER_QUALITY_TIERS: [number, number][] = [

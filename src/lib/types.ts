@@ -57,7 +57,6 @@ export interface ScoreBreakdown {
   // Influence depth sub-items
   followerScaleScore: number;
   listedScore: number;
-  verifiedScore: number;
   // Stability detail
   intervalCV: number;
   impressionCV: number;
