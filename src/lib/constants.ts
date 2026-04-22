@@ -174,7 +174,7 @@ export const DOMAIN_LABELS: Record<Domain, string> = {
 // ── Identity Multipliers ──────────────────────────────────────────────────
 
 export const IDENTITY_MULTIPLIERS: Record<string, number> = {
-  Builder: 1.20,
+  Builder: 1.30,
   KOL: 1.10,
   "Content Creator": 1.00,
 };

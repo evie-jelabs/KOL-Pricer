@@ -282,7 +282,7 @@ export default function HowPage() {
           title="Identity (AI-evaluated)"
           description="Builder accounts carry higher trust and conversion value."
           rows={[
-            ["Builder", "1.20x"],
+            ["Builder", "1.30x"],
             ["KOL", "1.10x"],
             ["Content Creator", "1.00x"],
           ]}
