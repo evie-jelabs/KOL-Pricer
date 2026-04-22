@@ -51,7 +51,7 @@ export default function HowPage() {
           <StepCard
             step={7}
             title="V2 Pricing"
-            desc="CPM = $10 + (Score/100) × $90. Price = CPM × (WeightedImp/1000) × Domain × Credibility × Relevance × Identity × Scarcity. Range is ±20%."
+            desc="CPM = $5 + (Score/100) × $55 (range $5~$60). Price = CPM × (WeightedImp/1000) × Domain × Credibility × Relevance × Identity × Scarcity. Range is ±20%."
           />
         </div>
       </section>
@@ -69,7 +69,7 @@ export default function HowPage() {
             />
             <FormulaLine
               label="CPM"
-              formula="$10 + (Overall Score / 100) × $90"
+              formula="$5 + (Overall Score / 100) × $55"
             />
             <FormulaLine
               label="Weighted Impressions"
@@ -230,13 +230,13 @@ export default function HowPage() {
           the appropriate CPM premium.
         </p>
         <DimensionCard
-          title="Domain × SubDomain → Multiplier"
+          title="Domain × SubDomain → Multiplier (max 1.30x)"
           rows={[
-            ["Crypto — DeFi / Layer1/L2 / Institutional", "1.50x"],
+            ["Crypto — DeFi / Layer1/L2 / Institutional", "1.30x"],
             ["Crypto — NFT / Gaming / Memecoin", "1.20x"],
-            ["AI — LLM / Base Model / AI Infra", "1.50x"],
-            ["AI — Application / SaaS / Tools", "1.30x"],
-            ["Finance — Institutional / TradFi / Macro", "1.50x"],
+            ["AI — LLM / Base Model / AI Infra", "1.30x"],
+            ["AI — Application / SaaS / Tools", "1.20x"],
+            ["Finance — Institutional / TradFi / Macro", "1.30x"],
             ["Finance — Retail / Personal Finance", "1.10x"],
             ["Business — Startup / SaaS / B2B", "1.20x"],
             ["Tech — General / Developer", "1.20x"],

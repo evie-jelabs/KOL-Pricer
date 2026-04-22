@@ -21,7 +21,7 @@ export default function FormulaCard({ pricing, domain, claudeAnalysis }: Props) 
       <div className="space-y-2 font-mono text-sm">
         {/* CPM */}
         <div className="flex justify-between text-gray-400">
-          <span>CPM = $10 + ({pricing.overallScore}/100) × $90</span>
+          <span>CPM = $5 + ({pricing.overallScore}/100) × $55</span>
           <span className="text-white">${pricing.cpm}</span>
         </div>
 

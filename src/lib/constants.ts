@@ -10,9 +10,9 @@ export const SCORE_WEIGHTS = {
   engagementQuality: 0.15,
 } as const;
 
-// CPM formula: $10 + (score/100) × $90  →  range $10~$100
-export const BASE_CPM = 10;
-export const MAX_CPM_BONUS = 90;
+// CPM formula: $5 + (score/100) × $55  →  range $5~$60
+export const BASE_CPM = 5;
+export const MAX_CPM_BONUS = 55;
 
 // ── Influence Depth sub-items ─────────────────────────────────────────────
 
@@ -103,31 +103,32 @@ export const TIME_DECAY_WEIGHTS: { maxDays: number; weight: number }[] = [
 // ── Domain Factor Map (10 subcategories) ─────────────────────────────────
 
 // Key: "domain:subdomain" normalized (lowercase, alphanumeric only)
+// Max domain factor: 1.3x
 export const DOMAIN_FACTOR_MAP: Record<string, number> = {
   // Crypto — tier 1: DeFi / Layer1/L2 / Institutional
-  "crypto:defi": 1.5,
-  "crypto:layer1": 1.5,
-  "crypto:layer2": 1.5,
-  "crypto:layer1l2": 1.5,
-  "crypto:institutional": 1.5,
+  "crypto:defi": 1.3,
+  "crypto:layer1": 1.3,
+  "crypto:layer2": 1.3,
+  "crypto:layer1l2": 1.3,
+  "crypto:institutional": 1.3,
   // Crypto — tier 2: NFT / Gaming / Memecoin
   "crypto:nft": 1.2,
   "crypto:gaming": 1.2,
   "crypto:memecoin": 1.2,
   // AI — tier 1: LLM / Base Model / AI Infra
-  "ai:llm": 1.5,
-  "ai:basemodel": 1.5,
-  "ai:aiinfra": 1.5,
-  "ai:infra": 1.5,
+  "ai:llm": 1.3,
+  "ai:basemodel": 1.3,
+  "ai:aiinfra": 1.3,
+  "ai:infra": 1.3,
   // AI — tier 2: Application / SaaS / Tools
-  "ai:application": 1.3,
-  "ai:app": 1.3,
-  "ai:saas": 1.3,
-  "ai:tools": 1.3,
+  "ai:application": 1.2,
+  "ai:app": 1.2,
+  "ai:saas": 1.2,
+  "ai:tools": 1.2,
   // Finance — tier 1: Institutional / TradFi / Macro
-  "finance:institutional": 1.5,
-  "finance:tradfi": 1.5,
-  "finance:macro": 1.5,
+  "finance:institutional": 1.3,
+  "finance:tradfi": 1.3,
+  "finance:macro": 1.3,
   // Finance — tier 2: Retail / Personal Finance
   "finance:retail": 1.1,
   "finance:personalfinance": 1.1,
@@ -149,8 +150,8 @@ export const DOMAIN_FACTOR_MAP: Record<string, number> = {
 
 // Fallback multipliers when subDomain doesn't match any key
 export const DOMAIN_DEFAULT_MULTIPLIERS: Record<Domain, number> = {
-  crypto: 1.35,
-  ai: 1.4,
+  crypto: 1.3,
+  ai: 1.3,
   finance: 1.3,
   business: 1.2,
   tech: 1.2,
