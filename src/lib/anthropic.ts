@@ -37,7 +37,7 @@ export async function analyzeAccount(
   const response = await client.messages.create({
     model: "claude-sonnet-4-20250514",
     max_tokens: 1024,
-    system: `你是一个 X/Twitter KOL 分析专家。根据用户的个人资料和近期推文，完成以下五项分析，并以 JSON 格式返回结果。只返回 JSON，不要有其他文字。
+    system: `你是一个 X/Twitter KOL 分析专家。根据用户的个人资料和近期推文，完成以下六项分析，并以 JSON 格式返回结果。只返回 JSON，不要有其他文字。
 
 1. **Domain（领域大类）**：只能是以下之一（英文小写）：
    crypto / ai / finance / business / tech / entertainment / other
@@ -72,11 +72,25 @@ export async function analyzeAccount(
    - 轻度偏题仍可算**部分相关**
    - relevanceScore = 相关推文数 / 总推文数 × 100
 
-5. **AdRatio（商单占比，0-100 的整数）**：估算这批推文中属于商业推广的比例。
-   - **算广告的情形**：项目推广/背书（含 mention 项目方账号 + 推广语气）、代码优惠/邀请链接、空投/抽奖宣传、带有 #ad/#sponsored/#partnership 标签、明显的"与 XX 合作"声明
-   - **不算广告**：纯行业分析、个人观点、中性提及某项目（无推广意图）、普通转推/评论
-   - 返回 0-100 整数（例如 30 = 30% 的推文是商单）
-   - **注意**：没有明显广告标记不代表没有广告，需根据内容语义判断
+5. **AdRatio（商单占比，0-100 的整数）**：逐条审查每条推文，判断是否为商业推广，计算占比。
+
+   **判定为商单（宽松认定，宁多勿少）**：
+   - 明确推广某个项目、代币、平台，带有正面评价或行动号召
+   - 提供邀请码、优惠码、referral 链接、注册链接
+   - 宣传空投、活动、白名单、抽奖（即使只是"参与"）
+   - mention 项目方账号，并配有"体验了 XX"、"推荐大家关注 XX"、"XX 不错"等推广语气
+   - 以"评测"或"分享"名义发布的项目推广（无 #ad 标签也算）
+   - "与 XX 合作"、"感谢 XX 赞助"等任何形式的合作声明
+   - 带有 #ad #sponsored #partnership #collab 等标签
+   - 明显的投票、转发抽奖活动推广
+
+   **不算商单**：
+   - 纯粹的市场行情评论、宏观分析、个人观点
+   - 中性提及某项目（仅作参考，无推广意图）
+   - 行业新闻转发（无明显倾向性）
+
+   **计算**：广告条数 ÷ 总推文条数 × 100，取整数。
+   **关键**：中文 KOL 商单很少打 #ad 标签，请务必根据内容语义判断，不要因为没有明显标记就给 0。
 
 6. **Tags（标签）**：
    - identityTags：从 ["Builder", "KOL", "Content Creator"] 中选择 1-2 个最匹配的
@@ -85,7 +99,7 @@ export async function analyzeAccount(
      - Content Creator = 内容创作者/教程制作者/视频博主
    - capabilityTags：从 ["Branding", "Trading", "Traffic"] 中选择 1 个最匹配的
 
-返回格式：
+返回格式（必须包含所有字段，adRatio 不能省略）：
 {
   "domain": "crypto",
   "subDomain": "DeFi",
