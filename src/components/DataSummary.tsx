@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function DataSummary({ result }: Props) {
-  const { user, tweets, pricing, domain, subDomain } = result;
+  const { user, tweets, trimmedTweets, pricing, domain, subDomain } = result;
   const metrics = user.public_metrics;
 
   return (
@@ -50,8 +50,8 @@ export default function DataSummary({ result }: Props) {
           value={metrics.listed_count.toLocaleString()}
         />
         <MetricItem
-          label="Analyzed"
-          value={`${tweets.length} tweets`}
+          label="Fetched / Scored"
+          value={`${tweets.length} / ${trimmedTweets.length}`}
         />
       </div>
 
