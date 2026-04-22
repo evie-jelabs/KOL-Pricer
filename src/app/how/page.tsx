@@ -46,7 +46,7 @@ export default function HowPage() {
           <StepCard
             step={6}
             title="4-Dimension Scoring"
-            desc="We calculate a composite Overall Score from 4 weighted dimensions: Influence Depth (25%), Follower Quality (35%), Content Stability (25%), and Engagement Quality (15%)."
+            desc="We calculate a composite Overall Score from 4 weighted dimensions: Influence Depth (20%), Follower Quality (40%), Content Stability (25%), and Engagement Quality (15%)."
           />
           <StepCard
             step={7}
@@ -65,7 +65,7 @@ export default function HowPage() {
           <div className="space-y-4 font-mono text-sm">
             <FormulaLine
               label="Overall Score"
-              formula="ID×25% + FQ×35% + CS×25% + EQ×15%"
+              formula="ID×20% + FQ×40% + CS×25% + EQ×15%"
             />
             <FormulaLine
               label="CPM"
@@ -141,7 +141,7 @@ export default function HowPage() {
         {/* Influence Depth */}
         <Card>
           <h3 className="mb-2 font-outfit font-semibold text-white">
-            1. Influence Depth (25%)
+            1. Influence Depth (20%)
           </h3>
           <p className="mb-4 text-sm leading-relaxed text-gray-400">
             Composite of 3 sub-items:{" "}
@@ -184,7 +184,7 @@ export default function HowPage() {
         </Card>
 
         <DimensionCard
-          title="2. Follower Quality — Weighted ER% (35%)"
+          title="2. Follower Quality — Weighted ER% (40%)"
           description="ER = Average Weighted Engagement / Followers × 100%. Weighted engagement = likes×1 + replies×3 + retweets×2 + quotes×4 + bookmarks×2."
           rows={[
             ["> 2%", "100"],
@@ -290,8 +290,8 @@ export default function HowPage() {
           title="Scarcity Factor (Ad Ratio, near 30 days)"
           description="Accounts that rarely accept sponsorships command a premium. Accounts that over-commercialize receive a discount."
           rows={[
-            ["< 5% sponsored tweets", "1.30x (very scarce)"],
-            ["5% – 15%", "1.15x"],
+            ["< 5% sponsored tweets", "1.20x (very scarce)"],
+            ["5% – 15%", "1.10x"],
             ["15% – 30%", "1.00x (baseline)"],
             ["30% – 50%", "0.85x"],
             ["> 50%", "0.70x (over-commercialized)"],

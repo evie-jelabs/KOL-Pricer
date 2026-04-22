@@ -25,7 +25,7 @@ export default function ScoreBreakdown({ scores }: Props) {
         {/* Influence Depth — with sub-breakdown */}
         <div>
           <ScoreBar
-            label="Influence Depth (25%)"
+            label="Influence Depth (20%)"
             score={scores.influenceDepth}
           />
           <div className="mt-1.5 grid grid-cols-3 gap-1 pl-2">
@@ -37,7 +37,7 @@ export default function ScoreBreakdown({ scores }: Props) {
 
         {/* Follower Quality */}
         <ScoreBar
-          label="Follower Quality (35%)"
+          label="Follower Quality (40%)"
           score={scores.followerQuality}
           note={`Weighted ER`}
         />

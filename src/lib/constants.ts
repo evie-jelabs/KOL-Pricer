@@ -4,8 +4,8 @@ import { Domain } from "./types";
 
 // 4-dimension scoring weights
 export const SCORE_WEIGHTS = {
-  influenceDepth: 0.25,
-  followerQuality: 0.35,
+  influenceDepth: 0.20,
+  followerQuality: 0.40,
   contentStability: 0.25,
   engagementQuality: 0.15,
 } as const;
@@ -202,8 +202,8 @@ export const SCARCITY_TIERS: [number, number][] = [
   [50, 0.70],  // > 50% ads → over-commercialized
   [30, 0.85],  // 30-50%
   [15, 1.00],  // 15-30% → baseline
-  [5, 1.15],   // 5-15%
-  [0, 1.30],   // < 5% → very scarce
+  [5, 1.10],   // 5-15%
+  [0, 1.20],   // < 5% → very scarce
 ];
 
 // Hashtags that indicate sponsored content
