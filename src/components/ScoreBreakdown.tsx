@@ -6,14 +6,6 @@ interface Props {
   scores: ScoreBreakdownType;
 }
 
-const LABELS: { key: keyof Omit<ScoreBreakdownType, "overall">; label: string; weight: string }[] = [
-  { key: "followerScale", label: "Follower Scale", weight: "20%" },
-  { key: "followerQuality", label: "Follower Quality (ER)", weight: "25%" },
-  { key: "updateStability", label: "Update Stability", weight: "15%" },
-  { key: "impressionStability", label: "Impression Stability", weight: "20%" },
-  { key: "engagementRate", label: "Engagement Rate", weight: "20%" },
-];
-
 export default function ScoreBreakdown({ scores }: Props) {
   return (
     <Card>
@@ -28,15 +20,51 @@ export default function ScoreBreakdown({ scores }: Props) {
           <span className="text-sm text-gray-500">/100</span>
         </div>
       </div>
-      <div className="space-y-3">
-        {LABELS.map(({ key, label, weight }) => (
+
+      <div className="space-y-4">
+        {/* Influence Depth — with sub-breakdown */}
+        <div>
           <ScoreBar
-            key={key}
-            label={`${label} (${weight})`}
-            score={scores[key]}
+            label="Influence Depth (25%)"
+            score={scores.influenceDepth}
           />
-        ))}
+          <div className="mt-1.5 grid grid-cols-3 gap-1 pl-2">
+            <SubItem label="Followers" score={scores.followerScaleScore} />
+            <SubItem label="Listed" score={scores.listedScore} />
+            <SubItem label="Elite %" score={scores.verifiedScore} />
+          </div>
+        </div>
+
+        {/* Follower Quality */}
+        <ScoreBar
+          label="Follower Quality (35%)"
+          score={scores.followerQuality}
+          note={`Weighted ER`}
+        />
+
+        {/* Content Stability */}
+        <ScoreBar
+          label="Content Stability (25%)"
+          score={scores.contentStability}
+          note={`CV ${scores.combinedCV.toFixed(2)}`}
+        />
+
+        {/* Engagement Quality */}
+        <ScoreBar
+          label="Engagement Quality (15%)"
+          score={scores.engagementQuality}
+          note={`HQ ${scores.highQualityRatio.toFixed(1)}%`}
+        />
       </div>
     </Card>
+  );
+}
+
+function SubItem({ label, score }: { label: string; score: number }) {
+  return (
+    <div className="rounded-md bg-gray-800/40 px-2 py-1 text-center">
+      <p className="text-[10px] text-gray-500">{label}</p>
+      <p className="font-mono text-xs font-semibold text-gray-300">{score}</p>
+    </div>
   );
 }

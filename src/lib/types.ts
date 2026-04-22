@@ -21,6 +21,12 @@ export interface TweetPublicMetrics {
   retweet_count: number;
   quote_count: number;
   impression_count: number;
+  bookmark_count: number;
+}
+
+export interface TweetEntities {
+  hashtags?: { tag: string }[];
+  mentions?: { username: string }[];
 }
 
 export interface Tweet {
@@ -28,23 +34,36 @@ export interface Tweet {
   text: string;
   created_at: string;
   public_metrics: TweetPublicMetrics;
+  entities?: TweetEntities;
 }
 
 export type Domain =
   | "crypto"
-  | "tech"
+  | "ai"
   | "finance"
   | "business"
+  | "tech"
   | "entertainment"
   | "other";
 
+// V2: 4-dimension score breakdown
 export interface ScoreBreakdown {
-  followerScale: number;
+  // 4 main dimensions
+  influenceDepth: number;
   followerQuality: number;
-  updateStability: number;
-  impressionStability: number;
-  engagementRate: number;
+  contentStability: number;
+  engagementQuality: number;
   overall: number;
+  // Influence depth sub-items
+  followerScaleScore: number;
+  listedScore: number;
+  verifiedScore: number;
+  // Stability detail
+  intervalCV: number;
+  impressionCV: number;
+  combinedCV: number;
+  // Engagement quality detail
+  highQualityRatio: number;
 }
 
 export type IdentityTag = "Builder" | "KOL" | "Content Creator";
@@ -60,15 +79,20 @@ export interface ClaudeAnalysis {
   recommendation: string;
 }
 
+// V2: Pricing result with new fields
 export interface PricingResult {
   cpm: number;
   overallScore: number;
   avgImpressions: number;
+  weightedImpressions: number;
   effectiveImpressions: number;
   domainMultiplier: number;
+  subDomain: string;
   credibilityMultiplier: number;
   relevanceMultiplier: number;
   identityMultiplier: number;
+  scarcityFactor: number;
+  adRatio: number;
   combinedModifiers: number;
   calculatedPrice: number;
   floor: number;
@@ -77,6 +101,8 @@ export interface PricingResult {
   priceMin: number;
   priceMax: number;
   avgEngagement: number;
+  weightedEngagement: number;
+  highQualityRatio: number;
   engagementRate: number;
 }
 
@@ -85,6 +111,7 @@ export interface AnalysisResult {
   tweets: Tweet[];
   trimmedTweets: Tweet[];
   domain: Domain;
+  subDomain: string;
   scores: ScoreBreakdown;
   pricing: PricingResult;
   claudeAnalysis: ClaudeAnalysis;

@@ -22,13 +22,19 @@ export default function PriceCard({ pricing, domain }: Props) {
       </div>
       <div className="mt-6 grid grid-cols-2 gap-4">
         <Stat label="CPM" value={`$${pricing.cpm}`} />
-        <Stat label="Domain" value={DOMAIN_LABELS[domain]} />
-        <Stat label="Avg Impressions" value={pricing.avgImpressions.toLocaleString()} />
+        <Stat
+          label="Domain"
+          value={`${DOMAIN_LABELS[domain]} / ${pricing.subDomain}`}
+        />
+        <Stat
+          label="Weighted Impressions"
+          value={pricing.weightedImpressions.toLocaleString()}
+        />
         <Stat label="Imp / 1000" value={`${pricing.effectiveImpressions}`} />
         <Stat label="Overall Score" value={`${pricing.overallScore}/100`} />
         <Stat label="Engagement Rate" value={`${pricing.engagementRate}%`} />
         <Stat label="Combined Modifiers" value={`${pricing.combinedModifiers}x`} />
-        <Stat label="Avg Engagement" value={pricing.avgEngagement.toLocaleString()} />
+        <Stat label="Scarcity Factor" value={`${pricing.scarcityFactor}x`} />
       </div>
     </Card>
   );

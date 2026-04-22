@@ -4,22 +4,30 @@ import {
   BASE_CPM,
   MAX_CPM_BONUS,
   FOLLOWER_SCALE_TIERS,
+  LISTED_RATIO_TIERS,
+  VERIFIED_RATIO_TIERS,
   FOLLOWER_QUALITY_TIERS,
-  ENGAGEMENT_RATE_TIERS,
-  DOMAIN_MULTIPLIERS,
+  CONTENT_STABILITY_BREAKPOINTS,
+  CONTENT_STABILITY_CV_WEIGHTS,
+  ENGAGEMENT_QUALITY_TIERS,
+  ENGAGEMENT_WEIGHTS,
+  TIME_DECAY_WEIGHTS,
+  DOMAIN_FACTOR_MAP,
+  DOMAIN_DEFAULT_MULTIPLIERS,
+  IDENTITY_MULTIPLIERS,
   CREDIBILITY_TIERS,
   RELEVANCE_TIERS,
-  FLOOR_TIERS,
-  FLOOR_MAX_FOLLOWERS,
+  SCARCITY_TIERS,
+  AD_HASHTAGS,
   TRIM_COUNT,
   IQR_MULTIPLIER,
   PRICE_RANGE_LOW,
   PRICE_RANGE_HIGH,
 } from "./constants";
 
-// --- Tier lookup helpers ---
+// ── Tier lookup helpers ────────────────────────────────────────────────────
 
-/** For "higher is better" tiers (follower count, ER, etc.) */
+/** Higher-is-better: returns score for first threshold ≤ value */
 function lookupTierDesc(tiers: [number, number][], value: number): number {
   for (const [threshold, score] of tiers) {
     if (value >= threshold) return score;
@@ -27,86 +35,7 @@ function lookupTierDesc(tiers: [number, number][], value: number): number {
   return tiers[tiers.length - 1][1];
 }
 
-// --- Scoring functions ---
-
-export function scoreFollowerScale(followers: number): number {
-  return lookupTierDesc(FOLLOWER_SCALE_TIERS, followers);
-}
-
-export function scoreFollowerQuality(er: number): number {
-  return lookupTierDesc(FOLLOWER_QUALITY_TIERS, er);
-}
-
-export function scoreUpdateStability(cv: number): number {
-  if (cv < 0.3) return 100;
-  if (cv < 0.5) return 80;
-  if (cv < 0.8) return 60;
-  if (cv < 1.2) return 40;
-  return 20;
-}
-
-export function scoreImpressionStability(cv: number): number {
-  if (cv < 0.2) return 100;
-  if (cv < 0.4) return 80;
-  if (cv < 0.6) return 60;
-  if (cv < 0.8) return 40;
-  return 20;
-}
-
-export function scoreEngagementRate(er: number): number {
-  return lookupTierDesc(ENGAGEMENT_RATE_TIERS, er);
-}
-
-// --- Multiplier functions ---
-
-export function credibilityToMultiplier(score: number): number {
-  return lookupTierDesc(CREDIBILITY_TIERS, score);
-}
-
-export function relevanceToMultiplier(score: number): number {
-  return lookupTierDesc(RELEVANCE_TIERS, score);
-}
-
-export function identityToMultiplier(
-  identityTags: IdentityTag[],
-): number {
-  // Builder = 1.20x, everything else = 1.00x
-  return identityTags.includes("Builder") ? 1.20 : 1.00;
-}
-
-// --- Outlier trimming ---
-
-export function trimOutliers(tweets: Tweet[], n: number = TRIM_COUNT): Tweet[] {
-  if (tweets.length <= n * 2) return tweets;
-  const sorted = [...tweets].sort(
-    (a, b) => a.public_metrics.impression_count - b.public_metrics.impression_count
-  );
-  return sorted.slice(n, sorted.length - n);
-}
-
-export function removeIQROutliers(tweets: Tweet[]): Tweet[] {
-  if (tweets.length < 4) return tweets;
-
-  const impressions = tweets
-    .map((t) => t.public_metrics.impression_count)
-    .sort((a, b) => a - b);
-
-  const q1Index = Math.floor(impressions.length * 0.25);
-  const q3Index = Math.floor(impressions.length * 0.75);
-  const q1 = impressions[q1Index];
-  const q3 = impressions[q3Index];
-  const iqr = q3 - q1;
-
-  const lowerBound = q1 - IQR_MULTIPLIER * iqr;
-  const upperBound = q3 + IQR_MULTIPLIER * iqr;
-
-  return tweets.filter((t) => {
-    const imp = t.public_metrics.impression_count;
-    return imp >= lowerBound && imp <= upperBound;
-  });
-}
-
-// --- Utility ---
+// ── Utility ────────────────────────────────────────────────────────────────
 
 function coefficientOfVariation(values: number[]): number {
   if (values.length < 2) return 0;
@@ -128,143 +57,365 @@ function calcPostingIntervals(tweets: Tweet[]): number[] {
     const diff =
       new Date(sorted[i].created_at).getTime() -
       new Date(sorted[i + 1].created_at).getTime();
-    intervals.push(diff / (1000 * 60 * 60));
+    intervals.push(diff / (1000 * 60 * 60)); // hours
   }
   return intervals;
 }
 
-// --- Main scoring (5 dimensions) ---
+// ── Outlier removal ────────────────────────────────────────────────────────
+
+export function trimOutliers(tweets: Tweet[], n: number = TRIM_COUNT): Tweet[] {
+  if (tweets.length <= n * 2) return tweets;
+  const sorted = [...tweets].sort(
+    (a, b) => a.public_metrics.impression_count - b.public_metrics.impression_count
+  );
+  return sorted.slice(n, sorted.length - n);
+}
+
+export function removeIQROutliers(tweets: Tweet[]): Tweet[] {
+  if (tweets.length < 4) return tweets;
+  const impressions = tweets
+    .map((t) => t.public_metrics.impression_count)
+    .sort((a, b) => a - b);
+  const q1 = impressions[Math.floor(impressions.length * 0.25)];
+  const q3 = impressions[Math.floor(impressions.length * 0.75)];
+  const iqr = q3 - q1;
+  const lower = q1 - IQR_MULTIPLIER * iqr;
+  const upper = q3 + IQR_MULTIPLIER * iqr;
+  return tweets.filter((t) => {
+    const imp = t.public_metrics.impression_count;
+    return imp >= lower && imp <= upper;
+  });
+}
+
+// ── V2: Weighted Impressions (time decay) ─────────────────────────────────
+
+export function calcWeightedImpressions(tweets: Tweet[]): number {
+  if (tweets.length === 0) return 0;
+  const now = Date.now();
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const tweet of tweets) {
+    const ageDays =
+      (now - new Date(tweet.created_at).getTime()) / (1000 * 60 * 60 * 24);
+    const entry =
+      TIME_DECAY_WEIGHTS.find((w) => ageDays <= w.maxDays) ??
+      TIME_DECAY_WEIGHTS[TIME_DECAY_WEIGHTS.length - 1];
+    const weight = entry.weight;
+    weightedSum += tweet.public_metrics.impression_count * weight;
+    totalWeight += weight;
+  }
+  return totalWeight > 0 ? weightedSum / totalWeight : 0;
+}
+
+// ── V2: Weighted Engagement (per tweet) ───────────────────────────────────
+
+export function calcWeightedEngagement(tweet: Tweet): number {
+  const m = tweet.public_metrics;
+  return (
+    (m.like_count ?? 0) * ENGAGEMENT_WEIGHTS.likes +
+    (m.reply_count ?? 0) * ENGAGEMENT_WEIGHTS.replies +
+    (m.retweet_count ?? 0) * ENGAGEMENT_WEIGHTS.retweets +
+    (m.quote_count ?? 0) * ENGAGEMENT_WEIGHTS.quotes +
+    (m.bookmark_count ?? 0) * ENGAGEMENT_WEIGHTS.bookmarks
+  );
+}
+
+// ── V2: Influence Depth (3 sub-items) ────────────────────────────────────
+
+export function calcInfluenceDepth(
+  followers: number,
+  listedCount: number,
+  verifiedFollowers?: number
+): {
+  score: number;
+  followerScaleScore: number;
+  listedScore: number;
+  verifiedScore: number;
+} {
+  // Sub-item 1: Follower Scale (50%)
+  const followerScaleScore = lookupTierDesc(FOLLOWER_SCALE_TIERS, followers);
+
+  // Sub-item 2: Listed Ratio (25%) — listed_count / followers × 1000
+  const listedRatio = followers > 0 ? (listedCount / followers) * 1000 : 0;
+  const listedScore = lookupTierDesc(LISTED_RATIO_TIERS, listedRatio);
+
+  // Sub-item 3: Verified Followers Ratio (25%)
+  // Falls back to listed_count / followers × 100 when unavailable
+  let verifiedScore: number;
+  if (verifiedFollowers !== undefined && verifiedFollowers > 0) {
+    const verifiedRatio = (verifiedFollowers / followers) * 100;
+    verifiedScore = lookupTierDesc(VERIFIED_RATIO_TIERS, verifiedRatio);
+  } else {
+    const listedAlt = followers > 0 ? (listedCount / followers) * 100 : 0;
+    verifiedScore = lookupTierDesc(VERIFIED_RATIO_TIERS, listedAlt);
+  }
+
+  const score =
+    followerScaleScore * 0.5 + listedScore * 0.25 + verifiedScore * 0.25;
+
+  return { score, followerScaleScore, listedScore, verifiedScore };
+}
+
+// ── V2: Content Stability (merged CV) ────────────────────────────────────
+
+export function calcContentStability(
+  intervalCV: number,
+  impressionCV: number
+): { score: number; combinedCV: number } {
+  const combinedCV =
+    CONTENT_STABILITY_CV_WEIGHTS.intervalCV * intervalCV +
+    CONTENT_STABILITY_CV_WEIGHTS.impressionCV * impressionCV;
+
+  const entry = CONTENT_STABILITY_BREAKPOINTS.find(
+    ({ maxCV }) => combinedCV < maxCV
+  );
+  const score = entry ? entry.score : 10;
+  return { score, combinedCV };
+}
+
+// ── V2: Engagement Quality ────────────────────────────────────────────────
+
+export function calcEngagementQuality(highQualityRatio: number): number {
+  return lookupTierDesc(ENGAGEMENT_QUALITY_TIERS, highQualityRatio);
+}
+
+// ── V2: Follower Quality (weighted ER%) ───────────────────────────────────
+
+export function calcFollowerQuality(
+  weightedEngagementAvg: number,
+  followers: number
+): number {
+  const er = followers > 0 ? (weightedEngagementAvg / followers) * 100 : 0;
+  return lookupTierDesc(FOLLOWER_QUALITY_TIERS, er);
+}
+
+// ── V2: Ad Detection & Scarcity ──────────────────────────────────────────
+
+export function detectAdRatio(tweets: Tweet[]): number {
+  if (tweets.length === 0) return 0;
+  let adCount = 0;
+  for (const tweet of tweets) {
+    const hashtags =
+      tweet.entities?.hashtags?.map((h) => h.tag.toLowerCase()) ?? [];
+    const hasAdHashtag = hashtags.some((tag) => AD_HASHTAGS.includes(tag));
+    const hasAdInText = AD_HASHTAGS.some((kw) =>
+      new RegExp(`#${kw}\\b`, "i").test(tweet.text)
+    );
+    const hasDisclosure =
+      /\b(sponsored|paid promotion|paid partnership|in partnership with|ad disclosure)\b/i.test(
+        tweet.text
+      );
+    if (hasAdHashtag || hasAdInText || hasDisclosure) adCount++;
+  }
+  return (adCount / tweets.length) * 100;
+}
+
+export function mapAdRatioToScarcity(adRatio: number): number {
+  return lookupTierDesc(SCARCITY_TIERS, adRatio);
+}
+
+// ── V2: Domain Factor ─────────────────────────────────────────────────────
+
+export function mapDomainToFactor(domain: Domain, subDomain: string): number {
+  const normalize = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const key = `${normalize(domain)}:${normalize(subDomain)}`;
+
+  if (DOMAIN_FACTOR_MAP[key] !== undefined) return DOMAIN_FACTOR_MAP[key];
+
+  // Partial match: domain prefix + subDomain keyword overlap
+  const domainPrefix = normalize(domain) + ":";
+  const normSub = normalize(subDomain);
+  for (const [mapKey, value] of Object.entries(DOMAIN_FACTOR_MAP)) {
+    if (!mapKey.startsWith(domainPrefix)) continue;
+    const suffix = mapKey.slice(domainPrefix.length);
+    if (normSub.includes(suffix) || suffix.includes(normSub)) return value;
+  }
+
+  return DOMAIN_DEFAULT_MULTIPLIERS[domain] ?? 1.0;
+}
+
+// ── V2: Multiplier helpers ────────────────────────────────────────────────
+
+export function credibilityToMultiplier(score: number): number {
+  return lookupTierDesc(CREDIBILITY_TIERS, score);
+}
+
+export function relevanceToMultiplier(score: number): number {
+  return lookupTierDesc(RELEVANCE_TIERS, score);
+}
+
+export function identityToMultiplier(identityTags: IdentityTag[]): number {
+  if (identityTags.includes("Builder")) return IDENTITY_MULTIPLIERS["Builder"];
+  if (identityTags.includes("KOL")) return IDENTITY_MULTIPLIERS["KOL"];
+  return IDENTITY_MULTIPLIERS["Content Creator"];
+}
+
+// ── V2: Main Scoring (4 dimensions) ──────────────────────────────────────
 
 export function calculateScores(
   followers: number,
+  listedCount: number,
   tweets: Tweet[]
 ): ScoreBreakdown {
-  const impressions = tweets.map((t) => t.public_metrics.impression_count);
-  const avgImpressions = impressions.length > 0
-    ? impressions.reduce((a, b) => a + b, 0) / impressions.length
-    : 0;
+  // Weighted engagement per tweet
+  const weightedEngagements = tweets.map(calcWeightedEngagement);
+  const avgWeightedEngagement =
+    weightedEngagements.length > 0
+      ? weightedEngagements.reduce((a, b) => a + b, 0) /
+        weightedEngagements.length
+      : 0;
 
-  const totalEngagement = tweets.reduce((sum, t) => {
+  // High-quality interaction ratio
+  const totalHighQuality = tweets.reduce((sum, t) => {
     const m = t.public_metrics;
-    return sum + m.like_count + m.reply_count + m.retweet_count + m.quote_count;
+    return (
+      sum +
+      (m.reply_count ?? 0) +
+      (m.retweet_count ?? 0) +
+      (m.quote_count ?? 0) +
+      (m.bookmark_count ?? 0)
+    );
   }, 0);
-  const avgEngagement = tweets.length > 0 ? totalEngagement / tweets.length : 0;
+  const totalLikes = tweets.reduce(
+    (sum, t) => sum + (t.public_metrics.like_count ?? 0),
+    0
+  );
+  const totalInteractions = totalHighQuality + totalLikes;
+  const highQualityRatio =
+    totalInteractions > 0 ? (totalHighQuality / totalInteractions) * 100 : 0;
 
-  // ER for scoring: avg engagement / followers
-  const er = followers > 0 ? (avgEngagement / followers) * 100 : 0;
-
-  // ER for engagement rate dimension: avg engagement / avg impressions
-  const erImpressions = avgImpressions > 0 ? (avgEngagement / avgImpressions) * 100 : 0;
-
+  // CV values
+  const impressions = tweets.map((t) => t.public_metrics.impression_count);
   const impressionCV = coefficientOfVariation(impressions);
   const intervals = calcPostingIntervals(tweets);
-  const updateCV = coefficientOfVariation(intervals);
+  const intervalCV = coefficientOfVariation(intervals);
 
-  const followerScale = scoreFollowerScale(followers);
-  const followerQuality = scoreFollowerQuality(er);
-  const updateStability = scoreUpdateStability(updateCV);
-  const impressionStability = scoreImpressionStability(impressionCV);
-  const engagementRate = scoreEngagementRate(erImpressions);
+  // 4-dimension scores
+  const influenceDepthResult = calcInfluenceDepth(followers, listedCount);
+  const followerQuality = calcFollowerQuality(avgWeightedEngagement, followers);
+  const contentStabilityResult = calcContentStability(intervalCV, impressionCV);
+  const engagementQuality = calcEngagementQuality(highQualityRatio);
 
   const overall =
-    followerScale * SCORE_WEIGHTS.followerScale +
+    influenceDepthResult.score * SCORE_WEIGHTS.influenceDepth +
     followerQuality * SCORE_WEIGHTS.followerQuality +
-    updateStability * SCORE_WEIGHTS.updateStability +
-    impressionStability * SCORE_WEIGHTS.impressionStability +
-    engagementRate * SCORE_WEIGHTS.engagementRate;
+    contentStabilityResult.score * SCORE_WEIGHTS.contentStability +
+    engagementQuality * SCORE_WEIGHTS.engagementQuality;
 
   return {
-    followerScale,
-    followerQuality,
-    updateStability,
-    impressionStability,
-    engagementRate,
-    overall,
+    influenceDepth: Math.round(influenceDepthResult.score * 10) / 10,
+    followerQuality: Math.round(followerQuality * 10) / 10,
+    contentStability: Math.round(contentStabilityResult.score * 10) / 10,
+    engagementQuality: Math.round(engagementQuality * 10) / 10,
+    overall: Math.round(overall * 10) / 10,
+    followerScaleScore: influenceDepthResult.followerScaleScore,
+    listedScore: influenceDepthResult.listedScore,
+    verifiedScore: influenceDepthResult.verifiedScore,
+    intervalCV: Math.round(intervalCV * 1000) / 1000,
+    impressionCV: Math.round(impressionCV * 1000) / 1000,
+    combinedCV: Math.round(contentStabilityResult.combinedCV * 1000) / 1000,
+    highQualityRatio: Math.round(highQualityRatio * 10) / 10,
   };
 }
 
-// --- Price Floor ---
-
-export function getPriceFloor(followers: number, credibilityScore: number): number {
-  if (followers > FLOOR_MAX_FOLLOWERS) return 0;
-  if (credibilityScore < 55) return 0;
-
-  const baseFloor = lookupTierDesc(FLOOR_TIERS, followers);
-  if (baseFloor === 0) return 0;
-
-  if (credibilityScore < 70) return Math.round(baseFloor * 0.5);
-
-  return baseFloor;
-}
-
-// --- V2.1 Pricing ---
+// ── V2: Pricing ───────────────────────────────────────────────────────────
 
 export function calculatePricing(
   scores: ScoreBreakdown,
   tweets: Tweet[],
   followers: number,
   domain: Domain,
+  subDomain: string,
   credibilityScore: number,
   relevanceScore: number,
-  identityTags: IdentityTag[],
+  identityTags: IdentityTag[]
 ): PricingResult {
+  // Simple avg impressions (for display)
   const impressions = tweets.map((t) => t.public_metrics.impression_count);
-  const avgImpressions = impressions.length > 0
-    ? impressions.reduce((a, b) => a + b, 0) / impressions.length
-    : 0;
+  const avgImpressions =
+    impressions.length > 0
+      ? impressions.reduce((a, b) => a + b, 0) / impressions.length
+      : 0;
 
-  // Impressions in thousands
-  const effectiveImpressions = avgImpressions / 1000;
+  // Weighted impressions (time decay) — used in pricing
+  const weightedImpressions = calcWeightedImpressions(tweets);
+  const effectiveImpressions = weightedImpressions / 1000;
 
-  // Avg engagement & ER
-  const totalEngagement = tweets.reduce((sum, t) => {
+  // Weighted engagement avg (for display)
+  const weightedEngagements = tweets.map(calcWeightedEngagement);
+  const weightedEngagement =
+    weightedEngagements.length > 0
+      ? weightedEngagements.reduce((a, b) => a + b, 0) /
+        weightedEngagements.length
+      : 0;
+
+  // Simple avg engagement & ER (for display)
+  const totalSimpleEngagement = tweets.reduce((sum, t) => {
     const m = t.public_metrics;
-    return sum + m.like_count + m.reply_count + m.retweet_count + m.quote_count;
+    return (
+      sum +
+      (m.like_count ?? 0) +
+      (m.reply_count ?? 0) +
+      (m.retweet_count ?? 0) +
+      (m.quote_count ?? 0)
+    );
   }, 0);
-  const avgEngagement = tweets.length > 0 ? totalEngagement / tweets.length : 0;
-  const engagementRate = followers > 0 ? (avgEngagement / followers) * 100 : 0;
+  const avgEngagement =
+    tweets.length > 0 ? totalSimpleEngagement / tweets.length : 0;
+  const engagementRate =
+    followers > 0 ? (avgEngagement / followers) * 100 : 0;
 
-  // CPM
+  // Ad ratio & scarcity
+  const adRatio = detectAdRatio(tweets);
+  const scarcityFactor = mapAdRatioToScarcity(adRatio);
+
+  // CPM: $10 + (score/100) × $90
   const cpm = BASE_CPM + (scores.overall / 100) * MAX_CPM_BONUS;
 
-  // 4 Modifiers
-  const domainMultiplier = DOMAIN_MULTIPLIERS[domain];
+  // Multipliers
+  const domainMultiplier = mapDomainToFactor(domain, subDomain);
   const credibilityMultiplier = credibilityToMultiplier(credibilityScore);
   const relevanceMultiplier = relevanceToMultiplier(relevanceScore);
   const identityMultiplier = identityToMultiplier(identityTags);
 
-  // Multiplicative modifiers
+  // All modifiers multiplied (including scarcity)
   const combinedModifiers =
     domainMultiplier *
     credibilityMultiplier *
     relevanceMultiplier *
-    identityMultiplier;
+    identityMultiplier *
+    scarcityFactor;
 
-  // Price = CPM × (AvgImp/1000)^0.85 × Modifiers
+  // Price = CPM × (weightedImpressions / 1000) × combinedModifiers
   const calculatedPrice = cpm * effectiveImpressions * combinedModifiers;
-
-  // No floor
-  const floor = 0;
-  const floorApplied = false;
   const price = calculatedPrice;
 
   return {
     cpm: Math.round(cpm * 100) / 100,
-    overallScore: Math.round(scores.overall * 10) / 10,
+    overallScore: scores.overall,
     avgImpressions: Math.round(avgImpressions),
+    weightedImpressions: Math.round(weightedImpressions),
     effectiveImpressions: Math.round(effectiveImpressions * 100) / 100,
-    domainMultiplier,
+    domainMultiplier: Math.round(domainMultiplier * 100) / 100,
+    subDomain,
     credibilityMultiplier,
     relevanceMultiplier,
     identityMultiplier,
+    scarcityFactor: Math.round(scarcityFactor * 100) / 100,
+    adRatio: Math.round(adRatio * 10) / 10,
     combinedModifiers: Math.round(combinedModifiers * 100) / 100,
     calculatedPrice: Math.round(calculatedPrice),
-    floor,
-    floorApplied,
+    floor: 0,
+    floorApplied: false,
     price: Math.round(price),
     priceMin: Math.round(price * PRICE_RANGE_LOW),
     priceMax: Math.round(price * PRICE_RANGE_HIGH),
     avgEngagement: Math.round(avgEngagement),
+    weightedEngagement: Math.round(weightedEngagement),
+    highQualityRatio: scores.highQualityRatio,
     engagementRate: Math.round(engagementRate * 1000) / 1000,
   };
 }

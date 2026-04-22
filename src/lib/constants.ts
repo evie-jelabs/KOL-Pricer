@@ -1,113 +1,183 @@
 import { Domain } from "./types";
 
-// --- V2.1 Pricing Model ---
+// ── V2 Pricing Model ──────────────────────────────────────────────────────
 
-// Overall Score weights (5 dimensions)
+// 4-dimension scoring weights
 export const SCORE_WEIGHTS = {
-  followerScale: 0.20,
-  followerQuality: 0.25,
-  updateStability: 0.15,
-  impressionStability: 0.20,
-  engagementRate: 0.20,
+  influenceDepth: 0.25,
+  followerQuality: 0.35,
+  contentStability: 0.25,
+  engagementQuality: 0.15,
 } as const;
 
-// CPM formula: $5 + (Overall Score / 100) × $75
-export const BASE_CPM = 5;
-export const MAX_CPM_BONUS = 75;
+// CPM formula: $10 + (score/100) × $90  →  range $10~$100
+export const BASE_CPM = 10;
+export const MAX_CPM_BONUS = 90;
 
-// Impression decay exponent: (AvgImp / 1000) ^ IMP_DECAY
-export const IMP_DECAY = 0.85;
+// ── Influence Depth sub-items ─────────────────────────────────────────────
 
-// Follower Scale scoring tiers (8 levels, max > 60K)
+// Sub-item 1: Follower Scale (50% of Influence Depth)
 export const FOLLOWER_SCALE_TIERS: [number, number][] = [
-  [60_000, 100],
-  [40_000, 85],
-  [20_000, 70],
-  [10_000, 55],
-  [5_000, 40],
-  [3_000, 30],
-  [1_000, 20],
-  [0, 10],
-];
-
-// Follower Quality (ER%) scoring tiers
-export const FOLLOWER_QUALITY_TIERS: [number, number][] = [
-  [1.5, 100],
-  [0.8, 75],
-  [0.3, 50],
-  [0.08, 25],
-  [0, 10],
-];
-
-// Update Stability (CV) scoring tiers
-export const UPDATE_STABILITY_TIERS: [number, number][] = [
-  [0, 100],   // CV < 0.3 → 100
-  [0.3, 80],
-  [0.5, 60],
-  [0.8, 40],
-  [1.2, 20],
-];
-
-// Impression Stability (CV) scoring tiers
-export const IMPRESSION_STABILITY_TIERS: [number, number][] = [
-  [0, 100],   // CV < 0.2 → 100
-  [0.2, 80],
-  [0.4, 60],
-  [0.6, 40],
-  [0.8, 20],
-];
-
-// Engagement Rate scoring tiers
-export const ENGAGEMENT_RATE_TIERS: [number, number][] = [
-  [2.0, 100],
-  [1.5, 80],
-  [0.8, 60],
-  [0.3, 40],
+  [100_000, 100],
+  [50_000, 80],
+  [20_000, 60],
+  [10_000, 40],
   [0, 20],
 ];
 
-// Domain multipliers
-export const DOMAIN_MULTIPLIERS: Record<Domain, number> = {
-  crypto: 1.40,
-  tech: 1.30,
-  finance: 1.25,
-  business: 1.10,
-  entertainment: 1.00,
-  other: 0.90,
+// Sub-item 2: Listed Ratio = listed_count / followers × 1000 (25%)
+export const LISTED_RATIO_TIERS: [number, number][] = [
+  [5, 100],
+  [3, 75],
+  [1, 50],
+  [0.5, 25],
+  [0, 10],
+];
+
+// Sub-item 3: Verified Followers Ratio = verified_followers / followers × 100% (25%)
+// Falls back to listed_count proxy when verified_followers unavailable
+export const VERIFIED_RATIO_TIERS: [number, number][] = [
+  [5, 100],
+  [3, 75],
+  [1, 50],
+  [0.5, 25],
+  [0, 10],
+];
+
+// ── Follower Quality (weighted ER%) ───────────────────────────────────────
+
+export const FOLLOWER_QUALITY_TIERS: [number, number][] = [
+  [2.0, 100],
+  [1.0, 75],
+  [0.5, 50],
+  [0.1, 25],
+  [0, 10],
+];
+
+// ── Content Stability (combined CV) ───────────────────────────────────────
+
+// Thresholds for combined CV (lower is better)
+export const CONTENT_STABILITY_BREAKPOINTS = [
+  { maxCV: 0.3, score: 100 },
+  { maxCV: 0.5, score: 75 },
+  { maxCV: 0.8, score: 50 },
+  { maxCV: 1.2, score: 30 },
+  { maxCV: Infinity, score: 10 },
+] as const;
+
+// CV blend weights for content stability
+export const CONTENT_STABILITY_CV_WEIGHTS = {
+  intervalCV: 0.4,
+  impressionCV: 0.6,
+} as const;
+
+// ── Engagement Quality (high-quality interaction ratio) ───────────────────
+
+// High quality ratio = (replies + retweets + quotes + bookmarks) / total × 100%
+export const ENGAGEMENT_QUALITY_TIERS: [number, number][] = [
+  [30, 100],
+  [20, 80],
+  [10, 60],
+  [5, 40],
+  [0, 20],
+];
+
+// Weighted engagement multipliers (by transmission value)
+export const ENGAGEMENT_WEIGHTS = {
+  likes: 1,
+  replies: 3,
+  retweets: 2,
+  quotes: 4,
+  bookmarks: 2,
+} as const;
+
+// ── Time Decay for Weighted Impressions ───────────────────────────────────
+
+export const TIME_DECAY_WEIGHTS: { maxDays: number; weight: number }[] = [
+  { maxDays: 7, weight: 1.0 },
+  { maxDays: 14, weight: 0.8 },
+  { maxDays: 30, weight: 0.6 },
+  { maxDays: Infinity, weight: 0.4 },
+];
+
+// ── Domain Factor Map (10 subcategories) ─────────────────────────────────
+
+// Key: "domain:subdomain" normalized (lowercase, alphanumeric only)
+export const DOMAIN_FACTOR_MAP: Record<string, number> = {
+  // Crypto — tier 1: DeFi / Layer1/L2 / Institutional
+  "crypto:defi": 1.5,
+  "crypto:layer1": 1.5,
+  "crypto:layer2": 1.5,
+  "crypto:layer1l2": 1.5,
+  "crypto:institutional": 1.5,
+  // Crypto — tier 2: NFT / Gaming / Memecoin
+  "crypto:nft": 1.2,
+  "crypto:gaming": 1.2,
+  "crypto:memecoin": 1.2,
+  // AI — tier 1: LLM / Base Model / AI Infra
+  "ai:llm": 1.5,
+  "ai:basemodel": 1.5,
+  "ai:aiinfra": 1.5,
+  "ai:infra": 1.5,
+  // AI — tier 2: Application / SaaS / Tools
+  "ai:application": 1.3,
+  "ai:app": 1.3,
+  "ai:saas": 1.3,
+  "ai:tools": 1.3,
+  // Finance — tier 1: Institutional / TradFi / Macro
+  "finance:institutional": 1.5,
+  "finance:tradfi": 1.5,
+  "finance:macro": 1.5,
+  // Finance — tier 2: Retail / Personal Finance
+  "finance:retail": 1.1,
+  "finance:personalfinance": 1.1,
+  "finance:personal": 1.1,
+  // Business
+  "business:startup": 1.2,
+  "business:saas": 1.2,
+  "business:b2b": 1.2,
+  // Tech
+  "tech:general": 1.2,
+  "tech:developer": 1.2,
+  "tech:dev": 1.2,
+  // Entertainment / Other
+  "entertainment:entertainment": 1.0,
+  "entertainment:lifestyle": 1.0,
+  "entertainment:culture": 1.0,
+  "other:other": 1.0,
+};
+
+// Fallback multipliers when subDomain doesn't match any key
+export const DOMAIN_DEFAULT_MULTIPLIERS: Record<Domain, number> = {
+  crypto: 1.35,
+  ai: 1.4,
+  finance: 1.3,
+  business: 1.2,
+  tech: 1.2,
+  entertainment: 1.0,
+  other: 1.0,
 };
 
 export const DOMAIN_LABELS: Record<Domain, string> = {
   crypto: "Crypto / Web3",
-  tech: "AI / Technology",
+  ai: "AI / Machine Learning",
   finance: "Finance",
-  business: "Business / Gaming",
+  business: "Business / SaaS",
+  tech: "Tech / Developer",
   entertainment: "Entertainment",
   other: "Other",
 };
 
-// Identity multipliers
+// ── Identity Multipliers ──────────────────────────────────────────────────
+
 export const IDENTITY_MULTIPLIERS: Record<string, number> = {
   Builder: 1.20,
   KOL: 1.10,
   "Content Creator": 1.00,
 };
 
-// Capability multipliers
-export const CAPABILITY_MULTIPLIERS: Record<string, number> = {
-  Branding: 1.20,
-  Trading: 1.00,
-  Traffic: 0.80,
-};
+// ── Credibility & Relevance (AI-evaluated) ────────────────────────────────
 
-// Modifier weights for weighted average
-export const MODIFIER_WEIGHTS = {
-  credibility: 0.35,
-  relevance: 0.25,
-  domain: 0.20,
-  identity: 0.20,
-} as const;
-
-// Credibility multiplier tiers (max 1.10x)
 export const CREDIBILITY_TIERS: [number, number][] = [
   [85, 1.10],
   [70, 1.00],
@@ -116,7 +186,6 @@ export const CREDIBILITY_TIERS: [number, number][] = [
   [0, 0.25],
 ];
 
-// Relevance multiplier tiers (max 1.10x)
 export const RELEVANCE_TIERS: [number, number][] = [
   [85, 1.10],
   [70, 1.00],
@@ -125,30 +194,40 @@ export const RELEVANCE_TIERS: [number, number][] = [
   [0, 0.30],
 ];
 
-// Price Floor tiers (only for followers ≤ 80K)
-export const FLOOR_TIERS: [number, number][] = [
-  [30_000, 400],
-  [15_000, 300],
-  [8_000, 200],
-  [3_000, 100],
-  [1_000, 50],
-  [0, 0],
+// ── Scarcity Factor (Ad Ratio) ────────────────────────────────────────────
+
+// adRatio >= threshold → multiplier (descending order)
+export const SCARCITY_TIERS: [number, number][] = [
+  [50, 0.70],  // > 50% ads → over-commercialized
+  [30, 0.85],  // 30-50%
+  [15, 1.00],  // 15-30% → baseline
+  [5, 1.15],   // 5-15%
+  [0, 1.30],   // < 5% → very scarce
 ];
 
-export const FLOOR_MAX_FOLLOWERS = 80_000;
+// Hashtags that indicate sponsored content
+export const AD_HASHTAGS = [
+  "ad",
+  "sponsored",
+  "partnership",
+  "paid",
+  "collab",
+  "promotion",
+  "promo",
+];
 
-// Trim outliers: remove top N and bottom N by impressions
+// ── Outlier Trimming ──────────────────────────────────────────────────────
+
 export const TRIM_COUNT = 3;
-
-// IQR multiplier for anomaly detection
 export const IQR_MULTIPLIER = 1.5;
 
-// Price range
+// ── Price Range ───────────────────────────────────────────────────────────
+
 export const PRICE_RANGE_LOW = 0.8;
 export const PRICE_RANGE_HIGH = 1.2;
 
-// Rate limiting
+// ── Rate Limiting ─────────────────────────────────────────────────────────
+
 export const RATE_LIMIT_WINDOW_MS = 60_000;
 export const RATE_LIMIT_MAX = 5;
-
 export const X_API_TIMEOUT_MS = 30_000;

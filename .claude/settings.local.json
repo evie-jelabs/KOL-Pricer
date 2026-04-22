@@ -8,7 +8,32 @@
       "WebFetch(domain:www.wearefounders.uk)",
       "WebFetch(domain:www.xpoz.ai)",
       "Bash(python3 -c \"from PIL import Image; img = Image.open\\(''/Users/evie/KOL Pricer/public/favicon-32.png''\\); img.save\\(''/Users/evie/KOL Pricer/public/favicon.ico'', format=''ICO'', sizes=[\\(16,16\\),\\(32,32\\)]\\)\")",
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "WebFetch(domain:pro.xclaw.info)",
+      "WebFetch(domain:apidashboard.xclaw.info)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebSearch",
+      "WebFetch(domain:twitterscore.io)",
+      "WebFetch(domain:twitterscore.gitbook.io)",
+      "WebFetch(domain:awisee.com)",
+      "WebFetch(domain:pageoneformula.com)",
+      "WebFetch(domain:news.lever.io)",
+      "Bash(\"/Users/evie/KOL Pricer/.env.local\":*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsx:*)",
+      "Bash(node -e \"require\\(''dotenv''\\).config\\({path:''.env.local''}\\); console.log\\(''X:'', process.env.X_BEARER_TOKEN ? ''OK'' : ''MISSING''\\); console.log\\(''ANTHROPIC:'', process.env.ANTHROPIC_API_KEY ? ''OK'' : ''MISSING''\\); console.log\\(''ANTHROPIC_KEY_START:'', \\(process.env.ANTHROPIC_API_KEY || ''''\\).substring\\(0, 15\\)\\);\")",
+      "Bash(node -e \"require\\(''dotenv''\\).config\\({path:''.env.local''}\\); console.log\\(''X:'', process.env.X_BEARER_TOKEN ? ''OK'' : ''MISSING''\\); console.log\\(''ANTHROPIC:'', process.env.ANTHROPIC_API_KEY ? ''OK'' : ''MISSING''\\);\")",
+      "Bash(node -e \":*)",
+      "Bash(python3 -c \"import urllib.parse; print\\(urllib.parse.unquote\\(''AAAAAAAAAAAAAAAAAAAAAMvQ8AEAAAAAmagomgPs9wBvxnYTYn1ZGR5bF90%3DsJfXSGmDIHRr6IdlFiB3FymzWDOZEGl0BRyQ5DNOzMj5CPWLdT''\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -H \"Authorization: Bearer AAAAAAAAAAAAAAAAAAAAAMvQ8AEAAAAAmagomgPs9wBvxnYTYn1ZGR5bF90=sJfXSGmDIHRr6IdlFiB3FymzWDOZEGl0BRyQ5DNOzMj5CPWLdT\" \"https://api.x.com/2/users/by/username/elonmusk?user.fields=public_metrics\")",
+      "Bash(curl -s -H \"Authorization: Bearer AAAAAAAAAAAAAAAAAAAAAMvQ8AEAAAAAmagomgPs9wBvxnYTYn1ZGR5bF90=sJfXSGmDIHRr6IdlFiB3FymzWDOZEGl0BRyQ5DNOzMj5CPWLdT\" \"https://api.x.com/2/users/by/username/wolfyxbt?user.fields=public_metrics,description,created_at\")",
+      "Bash(node -e \"require\\(''dotenv''\\).config\\({ path: ''.env.local'' }\\); console.log\\(''Token starts with:'', process.env.X_BEARER_TOKEN?.substring\\(0, 20\\)\\); console.log\\(''Token length:'', process.env.X_BEARER_TOKEN?.length\\);\")",
+      "Bash(node -e \"require\\(''dotenv''\\).config\\({ path: ''.env.local'' }\\); const t = process.env.X_BEARER_TOKEN; console.log\\(''len:'', t.length\\); console.log\\(''first50:'', t.substring\\(0,50\\)\\); console.log\\(''last20:'', t.substring\\(t.length-20\\)\\);\")",
+      "Bash(X_BEARER_TOKEN='AAAAAAAAAAAAAAAAAAAAAMvQ8AEAAAAAmagomgPs9wBvxnYTYn1ZGR5bF90=sJfXSGmDIHRr6IdlFiB3FymzWDOZEGl0BRyQ5DNOzMj5CPWLdT' npx tsx -e \":*)",
+      "Bash(X_BEARER_TOKEN='AAAAAAAAAAAAAAAAAAAAAMvQ8AEAAAAAmagomgPs9wBvxnYTYn1ZGR5bF90=sJfXSGmDIHRr6IdlFiB3FymzWDOZEGl0BRyQ5DNOzMj5CPWLdT' node -e \":*)",
+      "Bash(npx next:*)",
+      "Bash(npx tsc *)"
     ]
   }
 }

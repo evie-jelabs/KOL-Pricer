@@ -63,7 +63,8 @@ export async function getUserTweets(
 ): Promise<Tweet[]> {
   const data = await xFetch(`/users/${userId}/tweets`, {
     max_results: String(maxResults),
-    "tweet.fields": "public_metrics,created_at,text",
+    // V2: added bookmark_count and entities for ad detection & engagement quality
+    "tweet.fields": "public_metrics,created_at,text,entities",
     exclude: "retweets,replies",
   });
 

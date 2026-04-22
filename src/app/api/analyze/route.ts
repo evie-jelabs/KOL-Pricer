@@ -41,16 +41,11 @@ setInterval(() => {
 
 function parseHandle(input: string): string {
   let handle = input.trim();
-  // Handle x.com/username or twitter.com/username URLs
-  const urlMatch = handle.match(
-    /(?:x\.com|twitter\.com)\/(@?[\w]+)/i
-  );
+  const urlMatch = handle.match(/(?:x\.com|twitter\.com)\/(@?[\w]+)/i);
   if (urlMatch) {
     handle = urlMatch[1];
   }
-  // Remove @ prefix
   handle = handle.replace(/^@/, "");
-  // Remove query params like ?s=21
   handle = handle.split("?")[0];
   return handle;
 }
@@ -91,7 +86,10 @@ export async function POST(req: NextRequest) {
 
   const stream = new ReadableStream({
     async start(controller) {
-      function sendLog(message: string, type: "info" | "success" | "error" = "info") {
+      function sendLog(
+        message: string,
+        type: "info" | "success" | "error" = "info"
+      ) {
         const data = JSON.stringify({
           type: "log",
           log: { timestamp: new Date().toISOString(), message, type },
@@ -113,8 +111,10 @@ export async function POST(req: NextRequest) {
         // Step 1: Fetch user profile
         sendLog(`Fetching profile for @${handle}...`);
         const user = await getUserByUsername(handle);
+        const { followers_count, following_count, tweet_count, listed_count } =
+          user.public_metrics;
         sendLog(
-          `Found @${user.username} — ${user.public_metrics.followers_count.toLocaleString()} followers`,
+          `Found @${user.username} — ${followers_count.toLocaleString()} followers | listed: ${listed_count}`,
           "success"
         );
 
@@ -140,28 +140,34 @@ export async function POST(req: NextRequest) {
         const iqrRemoved = trimmed.length - cleaned.length;
         if (iqrRemoved > 0) {
           sendLog(
-            `IQR 1.5x filter removed ${iqrRemoved} anomalous tweets → ${cleaned.length} tweets for scoring`,
+            `IQR 1.5x filter removed ${iqrRemoved} anomalous tweets → ${cleaned.length} tweets`,
             "success"
           );
         } else {
           sendLog(
-            `IQR filter: no additional outliers found, using ${cleaned.length} tweets`,
+            `IQR filter: no outliers found, using ${cleaned.length} tweets`,
             "success"
           );
         }
 
-        // Step 5: AI analysis (domain + credibility + relevance + tags)
-        sendLog("Analyzing with Claude AI (domain, credibility, relevance, tags)...");
+        // Step 5: Claude AI analysis (domain + subDomain + credibility + relevance + tags)
+        sendLog(
+          "Analyzing with Claude AI (domain, credibility, relevance, tags)..."
+        );
         const tweetTexts = tweets.map((t) => t.text);
-        const { domain, analysis: claudeAnalysis } = await analyzeAccount(
+        const {
+          domain,
+          subDomain,
+          analysis: claudeAnalysis,
+        } = await analyzeAccount(
           user.description || "",
           tweetTexts,
-          user.public_metrics.followers_count,
-          user.public_metrics.following_count,
-          user.public_metrics.tweet_count,
+          followers_count,
+          following_count,
+          tweet_count,
           user.created_at
         );
-        sendLog(`Domain: ${domain}`, "success");
+        sendLog(`Domain: ${domain} / ${subDomain}`, "success");
         sendLog(
           `Credibility: ${claudeAnalysis.credibilityScore}/100 — ${claudeAnalysis.credibilityReason}`,
           "success"
@@ -175,54 +181,54 @@ export async function POST(req: NextRequest) {
           "success"
         );
 
-        // Step 6: Calculate 5-dimension scores
-        sendLog("Calculating scores (5 dimensions)...");
-        const scores = calculateScores(
-          user.public_metrics.followers_count,
-          cleaned
+        // Step 6: Calculate V2 4-dimension scores
+        sendLog("Calculating scores (V2: 4 dimensions)...");
+        const scores = calculateScores(followers_count, listed_count, cleaned);
+        sendLog(
+          `Influence Depth: ${scores.influenceDepth} | Follower Quality: ${scores.followerQuality} | Content Stability: ${scores.contentStability} | Engagement Quality: ${scores.engagementQuality}`,
+          "success"
         );
         sendLog(
           `Overall Score: ${scores.overall.toFixed(1)}/100`,
           "success"
         );
 
-        // Step 7: Calculate V2.1 pricing
-        sendLog("Computing pricing...");
+        // Step 7: Calculate V2 pricing
+        sendLog("Computing V2 pricing (time-decay impressions + scarcity)...");
         const pricing = calculatePricing(
           scores,
           cleaned,
-          user.public_metrics.followers_count,
+          followers_count,
           domain,
+          subDomain,
           claudeAnalysis.credibilityScore,
           claudeAnalysis.relevanceScore,
-          claudeAnalysis.identityTags,
+          claudeAnalysis.identityTags
         );
 
         sendLog(
-          `CPM: $${pricing.cpm} | Dom: ${pricing.domainMultiplier}x | Cred: ${pricing.credibilityMultiplier}x | Relev: ${pricing.relevanceMultiplier}x | Id: ${pricing.identityMultiplier}x`,
+          `CPM: $${pricing.cpm} | Weighted Imp: ${pricing.weightedImpressions.toLocaleString()}`,
           "success"
         );
         sendLog(
-          `Combined Modifiers: ${pricing.combinedModifiers}x`,
+          `Domain(${subDomain}): ${pricing.domainMultiplier}x | Cred: ${pricing.credibilityMultiplier}x | Relev: ${pricing.relevanceMultiplier}x | Identity: ${pricing.identityMultiplier}x | Scarcity: ${pricing.scarcityFactor}x`,
           "success"
         );
-        if (pricing.floorApplied) {
-          sendLog(
-            `Price Floor applied: $${pricing.floor} (calculated: $${pricing.calculatedPrice})`,
-            "success"
-          );
-        }
+        sendLog(
+          `Ad ratio: ${pricing.adRatio}% | Combined modifiers: ${pricing.combinedModifiers}x`,
+          "success"
+        );
         sendLog(
           `Estimated price: $${pricing.price.toLocaleString()} ($${pricing.priceMin.toLocaleString()} ~ $${pricing.priceMax.toLocaleString()})`,
           "success"
         );
 
-        // Send final result
         sendResult({
           user,
           tweets,
           trimmedTweets: cleaned,
           domain,
+          subDomain,
           scores,
           pricing,
           claudeAnalysis,

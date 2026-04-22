@@ -66,7 +66,7 @@ async function analyzeOne(handle: string, actualPrice: number | null) {
 
     // Step 5: Claude analysis
     const tweetTexts = tweets.map((t) => t.text);
-    const { domain, analysis } = await analyzeAccount(
+    const { domain, subDomain, analysis } = await analyzeAccount(
       user.description || "",
       tweetTexts,
       followers,
@@ -75,15 +75,16 @@ async function analyzeOne(handle: string, actualPrice: number | null) {
       user.created_at
     );
 
-    // Step 6: Calculate scores (for display)
-    const scores = calculateScores(followers, cleaned);
+    // Step 6: Calculate V2 4-dimension scores
+    const scores = calculateScores(followers, user.public_metrics.listed_count, cleaned);
 
-    // Step 7: V2.1 pricing
+    // Step 7: V2 pricing
     const pricing = calculatePricing(
       scores,
       cleaned,
       followers,
       domain,
+      subDomain,
       analysis.credibilityScore,
       analysis.relevanceScore,
       analysis.identityTags,
