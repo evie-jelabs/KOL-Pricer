@@ -14,6 +14,7 @@ const VALID_DOMAINS: Domain[] = [
 export interface FullClaudeResult {
   domain: Domain;
   subDomain: string;
+  adRatio: number;
   analysis: ClaudeAnalysis;
 }
 
@@ -71,7 +72,13 @@ export async function analyzeAccount(
    - 轻度偏题仍可算**部分相关**
    - relevanceScore = 相关推文数 / 总推文数 × 100
 
-5. **Tags（标签）**：
+5. **AdRatio（商单占比，0-100 的整数）**：估算这批推文中属于商业推广的比例。
+   - **算广告的情形**：项目推广/背书（含 mention 项目方账号 + 推广语气）、代码优惠/邀请链接、空投/抽奖宣传、带有 #ad/#sponsored/#partnership 标签、明显的"与 XX 合作"声明
+   - **不算广告**：纯行业分析、个人观点、中性提及某项目（无推广意图）、普通转推/评论
+   - 返回 0-100 整数（例如 30 = 30% 的推文是商单）
+   - **注意**：没有明显广告标记不代表没有广告，需根据内容语义判断
+
+6. **Tags（标签）**：
    - identityTags：从 ["Builder", "KOL", "Content Creator"] 中选择 1-2 个最匹配的
      - Builder = 行业从业者（Founder/CTO/Dev/Researcher），bio或推文中有明确的项目构建证据
      - KOL = 意见领袖/有影响力的评论者/分析师
@@ -86,6 +93,7 @@ export async function analyzeAccount(
   "credibilityReason": "简短说明原因",
   "relevanceScore": 70,
   "relevanceReason": "X条推文中Y条与领域直接相关",
+  "adRatio": 20,
   "identityTags": ["Builder", "KOL"],
   "capabilityTags": ["Branding"],
   "recommendation": "一句话总结该账号适合什么类型的合作"
@@ -122,10 +130,12 @@ ${tweetsJoined}`,
     VALID_DOMAINS.find((d) => parsed.domain === d) ?? "other";
 
   const subDomain: string = parsed.subDomain ?? "Other";
+  const adRatio: number = Math.min(100, Math.max(0, parsed.adRatio ?? 0));
 
   return {
     domain,
     subDomain,
+    adRatio,
     analysis: {
       credibilityScore: Math.min(100, Math.max(0, parsed.credibilityScore ?? 50)),
       credibilityReason: parsed.credibilityReason ?? "",

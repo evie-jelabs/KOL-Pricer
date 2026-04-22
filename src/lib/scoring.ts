@@ -331,7 +331,8 @@ export function calculatePricing(
   subDomain: string,
   credibilityScore: number,
   relevanceScore: number,
-  identityTags: IdentityTag[]
+  identityTags: IdentityTag[],
+  claudeAdRatio?: number  // Claude AI estimate overrides regex detection
 ): PricingResult {
   // Simple avg impressions (for display)
   const impressions = tweets.map((t) => t.public_metrics.impression_count);
@@ -368,8 +369,9 @@ export function calculatePricing(
   const engagementRate =
     followers > 0 ? (avgEngagement / followers) * 100 : 0;
 
-  // Ad ratio & scarcity
-  const adRatio = detectAdRatio(tweets);
+  // Ad ratio & scarcity — Claude estimate takes priority over regex detection
+  const adRatio =
+    claudeAdRatio !== undefined ? claudeAdRatio : detectAdRatio(tweets);
   const scarcityFactor = mapAdRatioToScarcity(adRatio);
 
   // CPM: $10 + (score/100) × $90

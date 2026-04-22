@@ -66,7 +66,7 @@ async function analyzeOne(handle: string, actualPrice: number | null) {
 
     // Step 5: Claude analysis
     const tweetTexts = tweets.map((t) => t.text);
-    const { domain, subDomain, analysis } = await analyzeAccount(
+    const { domain, subDomain, adRatio: claudeAdRatio, analysis } = await analyzeAccount(
       user.description || "",
       tweetTexts,
       followers,
@@ -88,6 +88,7 @@ async function analyzeOne(handle: string, actualPrice: number | null) {
       analysis.credibilityScore,
       analysis.relevanceScore,
       analysis.identityTags,
+      claudeAdRatio,
     );
 
     // Calculate deviation

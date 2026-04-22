@@ -158,6 +158,7 @@ export async function POST(req: NextRequest) {
         const {
           domain,
           subDomain,
+          adRatio: claudeAdRatio,
           analysis: claudeAnalysis,
         } = await analyzeAccount(
           user.description || "",
@@ -167,7 +168,7 @@ export async function POST(req: NextRequest) {
           tweet_count,
           user.created_at
         );
-        sendLog(`Domain: ${domain} / ${subDomain}`, "success");
+        sendLog(`Domain: ${domain} / ${subDomain} | Ad ratio: ${claudeAdRatio}%`, "success");
         sendLog(
           `Credibility: ${claudeAnalysis.credibilityScore}/100 — ${claudeAnalysis.credibilityReason}`,
           "success"
@@ -203,7 +204,8 @@ export async function POST(req: NextRequest) {
           subDomain,
           claudeAnalysis.credibilityScore,
           claudeAnalysis.relevanceScore,
-          claudeAnalysis.identityTags
+          claudeAnalysis.identityTags,
+          claudeAdRatio  // Claude-detected ad ratio (overrides regex)
         );
 
         sendLog(
